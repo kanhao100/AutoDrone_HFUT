@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-######################################################
-##  Running these two scripts simultaneously:       ##
-##   - t265_to_mavlink.py                           ##
-##   - d4xx_to_mavlink.py                           ##
-######################################################
-
 # Install required packages: 
 #   pip3 install MAVProxy
 
