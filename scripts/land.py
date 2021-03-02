@@ -26,6 +26,8 @@ capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 #frame =cv2.imread("./3.jpg")
 #capture.set(cv2.CAP_PROP_CONTRAST,50)
 
+current_time_us = 0
+
 #######################################
 # User input
 #######################################
@@ -54,6 +56,7 @@ vehicle = connect(connection_string, wait_ready=True)
 
 
 def send_land_message(x, y):
+    global current_time_us
     msg = vehicle.message_factory.landing_target_encode(
         current_time_us,                       # time target data was processed, as close to sensor capture as possible
         0,                                  # target num, not used
@@ -74,15 +77,16 @@ def send_land_message(x, y):
     vehicle.flush()
 
 while(True):
+    current_time_us = int(round(time.time() * 1000000))
     ret, frame = capture.read()
     #灰度化
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     #高斯滤波
-    gaussian_smoothing = cv2.GaussianBlur(gray,(5,5),0)
+    #gaussian_smoothing = cv2.GaussianBlur(gray,(5,5),0)
     #canny边缘检测算法
-    canny_dection = cv2.Canny(gaussian_smoothing,35,120)
-    ret, thresh = cv2.threshold(gaussian_smoothing, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    #canny_dection = cv2.Canny(gaussian_smoothing,35,120)
+    #ret, thresh = cv2.threshold(gaussian_smoothing, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    #contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
     #cv2.drawContours(canny_dection_new, contours, -1, (255, 255, 255), 1)
     circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 20, param1=100, param2=50, minRadius=30, maxRadius=120)
     frame_circles=frame.copy()
@@ -92,20 +96,20 @@ while(True):
         circles = circle1[0, :, :]  # 提取为二维
         circles = np.uint16(np.around(circles))  # 四舍五入，取整
         for i in circles[:]:
-            cv2.circle(frame_circles, (i[0], i[1]), i[2], (255, 0, 0), 2)  # 画圆
-            cv2.circle(frame_circles, (i[0], i[1]), 2, (255, 0, 0), 2)  # 画圆心
+            #cv2.circle(frame_circles, (i[0], i[1]), i[2], (255, 0, 0), 2)  # 画圆
+            #cv2.circle(frame_circles, (i[0], i[1]), 2, (255, 0, 0), 2)  # 画圆心
             x = i[0]
             y = i[1]
         if x is not None:
             send_land_message(x,y)
 
     #cv2.imshow('frame', frame)
-    #cv2.imshow('gray', gray)
+    cv2.imshow('gray', gray)
     #cv2.imshow('gaussian_smoothing', gaussian_smoothing)
-    cv2.imshow('canny_dection', canny_dection)
-    cv2.imshow('thresh',thresh)
+    #cv2.imshow('canny_dection', canny_dection)
+    #cv2.imshow('thresh',thresh)
     #cv2.imshow('frame_new',frame_new)
-    cv2.imshow('frame_circles',frame_circles)
+    #cv2.imshow('frame_circles',frame_circles)
 
     if cv2.waitKey(30) == 27:
         break

@@ -46,7 +46,7 @@ def progress(string):
 #######################################
 
 # Default configurations for connection to the FCU
-connection_string_default = '/dev/ttyUSB0'
+connection_string_default = '/dev/ttyACM0'
 connection_baudrate_default = 921600
 connection_timeout_sec_default = 5
 

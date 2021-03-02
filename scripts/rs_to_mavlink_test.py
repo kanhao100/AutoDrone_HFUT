@@ -6,7 +6,7 @@
 import os
 import threading
 
-connection_in_port = "/dev/ttyUSB0"
+connection_in_port = "/dev/ttyACM0"
 connection_in_baud = "921600"
 connection_out_p01 = "127.0.0.1:14550"      # T265
 connection_out_p02 = "127.0.0.1:14560"      # 
