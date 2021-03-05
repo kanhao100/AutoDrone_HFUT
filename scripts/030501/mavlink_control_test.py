@@ -268,7 +268,7 @@ def condition_yaw(heading, relative=False):
     vehicle.send_mavlink(msg)
 
 
-def pos_control_align_north_and_move_square():
+def pos_control_align_north_and_move_2m():
 
     print("SQUARE path using SET_POSITION_TARGET_LOCAL_NED and position parameters")
     DURATION_SEC = 2 #Set duration for each segment.
@@ -297,26 +297,8 @@ def pos_control_align_north_and_move_square():
     goto_position_target_local_ned(SIZE_M, 0, -HEIGHT_M)
     time.sleep(DURATION_SEC)
 
-    print("Yaw 90 absolute (East)")
-    condition_yaw(90)
-    print("North (m): ", SIZE_M, ", East (m): ", SIZE_M, " Height (m):", HEIGHT_M," for", DURATION_SEC, "seconds")
-    goto_position_target_local_ned(SIZE_M, SIZE_M, -HEIGHT_M)
-    time.sleep(DURATION_SEC)
 
-    print("Yaw 180 absolute (South)")
-    condition_yaw(180)
-    print("North (m): 0m, East (m): ", SIZE_M, ", Height (m):", HEIGHT_M," for", DURATION_SEC, "seconds")
-    goto_position_target_local_ned(0, SIZE_M, -HEIGHT_M)
-    time.sleep(DURATION_SEC)
-
-    print("Yaw 270 absolute (West)")
-    condition_yaw(270)
-    print("North (m): 0m, East (m): 0m, Height (m):", HEIGHT_M," for", DURATION_SEC, "seconds")
-    goto_position_target_local_ned(0, 0, -HEIGHT_M)
-    time.sleep(DURATION_SEC)
-
-
-def vel_control_align_north_and_move_square():
+def vel_control_align_north_and_move_2m():
     """
     Fly the vehicle in a path using velocity vectors (the underlying code calls the 
     SET_POSITION_TARGET_LOCAL_NED command with the velocity parameters enabled).
@@ -358,24 +340,6 @@ def vel_control_align_north_and_move_square():
     send_ned_velocity(NORTH, 0, 0, DURATION_NORTH_SEC)
     send_ned_velocity(0, 0, 0, 1)
 
-    print("Yaw 90 absolute (East)")
-    condition_yaw(90)
-    print("Velocity East")
-    send_ned_velocity(0, EAST, 0, DURATION_EAST_SEC)
-    send_ned_velocity(0, 0, 0, 1)
-
-    print("Yaw 180 absolute (South)")
-    condition_yaw(180)
-    print("Velocity South")
-    send_ned_velocity(SOUTH, 0, 0, DURATION_SOUTH_SEC)
-    send_ned_velocity(0, 0, 0, 1)
-
-    print("Yaw 270 absolute (West)")
-    condition_yaw(270)
-    print("Velocity West")
-    send_ned_velocity(0, WEST, 0, DURATION_WEST_SEC)
-    send_ned_velocity(0, 0, 0, 1)
-
 
 #######################################
 # Main program starts here
@@ -392,17 +356,16 @@ try:
     print("Starting autonomous control...")
     while True:
         if (vehicle.mode.name == "LOITER") and (rc_channel_value > rc_control_thres):
-            pos_control_align_north_and_move_square()
+            pos_control_align_north_and_move_2m()
         elif (vehicle.mode.name == "GUIDED") and (rc_channel_value > rc_control_thres):
-            vel_control_align_north_and_move_square()
+            vel_control_align_north_and_move_2m()
         else:
             print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
             time.sleep(1)
-            
-    # print("Setting LAND mode...")
-    # vehicle.mode = VehicleMode("LAND")
-    # time.sleep(1)
-
+    print("Setting LAND mode...")
+    vehicle.mode = VehicleMode("LAND")
+    time.sleep(30)
+    #vehicle.armed = False
     # Close vehicle object before exiting script
     print("Close vehicle object")
     vehicle.close()

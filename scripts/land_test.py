@@ -10,23 +10,23 @@ import sys
 import cv2
 import numpy as np
 import math as m
+import threading
 #######################################
 # Global variables
 #######################################
-#精确降落部分#
-#fov
+#精确降落
 horizontal_fov = 85 * m.pi/180
 vertical_fov = 50 * m.pi/180
-#分辨率
 horizontal_resolution = 320
 vertical_resolution = 240
 capture = cv2.VideoCapture(0)
-#width, height = capture.get(3), capture.get(4)
+width, height = capture.get(3), capture.get(4)
 capture.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
 capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 #capture.set(cv2.CAP_PROP_FPS, 60)
 #frame =cv2.imread("./3.jpg")
 #capture.set(cv2.CAP_PROP_CONTRAST,50)
+
 current_time_us = 0
 
 #######################################
@@ -42,10 +42,38 @@ args = parser.parse_args()
 #######################################
 # Functions
 #######################################
+def mavlink_loop(conn, callbacks):
+    '''a main routine for a thread; reads data from a mavlink connection,
+    calling callbacks based on message type received.
+    '''
+    interesting_messages = list(callbacks.keys())
+    while True:
+        # send a heartbeat msg
+        conn.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_ONBOARD_CONTROLLER,
+                                mavutil.mavlink.MAV_AUTOPILOT_GENERIC,
+                                0,
+                                0,
+                                0)
+        m = conn.recv_match(type=interesting_messages, timeout=1, blocking=True)
+        if m is None:
+            continue
+        callbacks[m.get_type()](m)
+# Listen to ATTITUDE data: https://mavlink.io/en/messages/common.html#ATTITUDE
+def att_msg_callback(value):
+    global vehicle_pitch_rad
+    vehicle_pitch_rad = value.pitch
+    if debug_enable == 1:
+        progress("INFO: Received ATTITUDE msg, current pitch is %.2f degrees" % (m.degrees(vehicle_pitch_rad),))
 
+connection_string_default = '/dev/ttyACM0'
+connection_baudrate_default = 921600
 connection_string = args.connect
+connection_baudrate = args.baudrate
 sitl = None
-
+if not connection_baudrate:
+    connection_baudrate = connection_baudrate_default
+if not connection_string:
+    connection_string = connection_string_default
 # Start SITL if no connection string specified
 if not connection_string:
     import dronekit_sitl
@@ -55,13 +83,26 @@ if not connection_string:
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True)
 
+conn = mavutil.mavlink_connection(
+    connection_string,
+    autoreconnect = True,
+    source_system = 1,
+    source_component = 93,
+    baud=connection_baudrate,
+    force_connected=True,
+)
+mavlink_callbacks = {
+    'ATTITUDE': att_msg_callback,
+}
+mavlink_thread = threading.Thread(target=mavlink_loop, args=(conn, mavlink_callbacks))
+mavlink_thread.start()
 
 def send_land_message(x, y):
     global current_time_us
     msg = vehicle.message_factory.landing_target_encode(
         current_time_us,                       # time target data was processed, as close to sensor capture as possible
         0,                                  # target num, not used
-        mavutil.mavlink.MAV_FRAME_BODY_NED, # frame, not used #疑问：为什么给的注释是not used，未来的测试点
+        mavutil.mavlink.MAV_FRAME_BODY_NED, # frame, not used
         (x-horizontal_resolution/2)*horizontal_fov/horizontal_resolution,                       # X-axis angular offset, in radians
         (y-vertical_resolution/2)*vertical_fov/vertical_resolution,                       # Y-axis angular offset, in radians
         0,                           # distance, in meters
