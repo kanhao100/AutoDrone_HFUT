@@ -42,7 +42,6 @@ args = parser.parse_args()
 #######################################
 # Functions
 #######################################
-
 connection_string = args.connect
 sitl = None
 
