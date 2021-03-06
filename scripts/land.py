@@ -28,7 +28,6 @@ capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 #frame =cv2.imread("./3.jpg")
 #capture.set(cv2.CAP_PROP_CONTRAST,50)
 current_time_us = 0
-
 #######################################
 # User input
 #######################################
