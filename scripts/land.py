@@ -14,7 +14,7 @@ import math as m
 # Global variables
 #######################################
 #精确降落部分#
-#fov
+#相机fov参数设置
 horizontal_fov = 85 * m.pi/180
 vertical_fov = 50 * m.pi/180
 #分辨率
