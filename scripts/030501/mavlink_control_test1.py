@@ -348,25 +348,18 @@ def vel_control_align_north_and_move_1m():
 
 try:
     # If using SITL: Take off in GUIDED_NOGPS mode.
-    if sitl is not None:
+    if rc_channel_value > rc_control_thres):
         arm_and_takeoff_nogps(20)
         print("Hold position for 3 seconds")
-        set_attitude(duration = 8)
-    
-    # Wait until the RC channel is turned on and the corresponding channel is switch
-    print("Starting autonomous control...")
-    while True:
-        if (vehicle.mode.name == "LOITER") and (rc_channel_value > rc_control_thres):
-            pos_control_align_north_and_move_1m()
-        elif (vehicle.mode.name == "GUIDED") and (rc_channel_value > rc_control_thres):
-            vel_control_align_north_and_move_1m()
-        else:
-            print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
-            time.sleep(1)
+        set_attitude(duration = 3)
+    else:
+    print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
+    time.sleep(1)
+
     print("Setting LAND mode...")
     vehicle.mode = VehicleMode("LAND")
-    time.sleep(30)
-    #vehicle.armed = False
+    time.sleep(1)
+    vehicle.armed = False
     # Close vehicle object before exiting script
     print("Close vehicle object")
     vehicle.close()
