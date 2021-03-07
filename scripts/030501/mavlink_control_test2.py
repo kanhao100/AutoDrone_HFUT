@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+# 测试项目为向前两米然后降落
+# #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 ######################################################
@@ -268,11 +269,11 @@ def condition_yaw(heading, relative=False):
     vehicle.send_mavlink(msg)
 
 
-def pos_control_align_north_and_move_2m():
+def pos_control_align_north_and_move_1m():
 
     print("SQUARE path using SET_POSITION_TARGET_LOCAL_NED and position parameters")
     DURATION_SEC = 2 #Set duration for each segment.
-    HEIGHT_M = 2
+    HEIGHT_M = 1
     SIZE_M  = 2
 
     """
@@ -298,7 +299,7 @@ def pos_control_align_north_and_move_2m():
     time.sleep(DURATION_SEC)
 
 
-def vel_control_align_north_and_move_2m():
+def vel_control_align_north_and_move_1m():
     """
     Fly the vehicle in a path using velocity vectors (the underlying code calls the 
     SET_POSITION_TARGET_LOCAL_NED command with the velocity parameters enabled).
@@ -325,10 +326,10 @@ def vel_control_align_north_and_move_2m():
     DOWN = 0.5
     
     # Set duration for each segment.
-    DURATION_NORTH_SEC = 4
-    DURATION_SOUTH_SEC = 4
-    DURATION_EAST_SEC = 4
-    DURATION_WEST_SEC = 4
+    DURATION_NORTH_SEC = 2
+    DURATION_SOUTH_SEC = 2
+    DURATION_EAST_SEC = 2
+    DURATION_WEST_SEC = 2
 
     # Control path using velocity commands
     print("Point the vehicle to a specific direction, then moves using SET_POSITION_TARGET_LOCAL_NED and velocity parameters")
@@ -356,9 +357,9 @@ try:
     print("Starting autonomous control...")
     while True:
         if (vehicle.mode.name == "LOITER") and (rc_channel_value > rc_control_thres):
-            pos_control_align_north_and_move_2m()
+            pos_control_align_north_and_move_1m()
         elif (vehicle.mode.name == "GUIDED") and (rc_channel_value > rc_control_thres):
-            vel_control_align_north_and_move_2m()
+            vel_control_align_north_and_move_1m()
         else:
             print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
             time.sleep(1)
