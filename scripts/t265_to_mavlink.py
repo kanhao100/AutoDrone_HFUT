@@ -287,7 +287,8 @@ def send_vision_position_estimate_message():
                 current_time_us,            # us Timestamp (UNIX time or time since system boot)
                 H_aeroRef_aeroBody[0][3],   # Global X position
                 H_aeroRef_aeroBody[1][3],   # Global Y position
-                H_aeroRef_aeroBody[2][3],   # Global Z position
+                #H_aeroRef_aeroBody[2][3],   # Global Z position
+                None,#不传入Z轴参数测试
                 rpy_rad[0],	                # Roll angle
                 rpy_rad[1],	                # Pitch angle
                 rpy_rad[2],	                # Yaw angle
