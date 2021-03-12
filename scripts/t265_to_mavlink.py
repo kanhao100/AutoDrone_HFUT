@@ -282,19 +282,40 @@ def send_vision_position_estimate_message():
                                                cov_twist, 0,
                                                   cov_twist])
 
+            try:
+                rangefinder_dis = 0.12 - round(conn.messages['RANGEFINDER'].distance,3)
+                rangefinder_dis_flag = True
+                #progress("rangefinder_dis: %s" %rangefinder_dis)
+            except:
+                rangefinder_dis_flag = False
+                progres("Can't read the value of rangefinder")
             # Send the message
-            conn.mav.vision_position_estimate_send(
-                current_time_us,            # us Timestamp (UNIX time or time since system boot)
-                H_aeroRef_aeroBody[0][3],   # Global X position
-                H_aeroRef_aeroBody[1][3],   # Global Y position
-                #H_aeroRef_aeroBody[2][3],   # Global Z position
-                None,#不传入Z轴参数测试
-                rpy_rad[0],	                # Roll angle
-                rpy_rad[1],	                # Pitch angle
-                rpy_rad[2],	                # Yaw angle
-                covariance,                 # Row-major representation of pose 6x6 cross-covariance matrix
-                reset_counter               # Estimate reset counter. Increment every time pose estimate jumps.
-            )
+            if rangefinder_dis_flag:
+                conn.mav.vision_position_estimate_send(
+                    current_time_us,            # us Timestamp (UNIX time or time since system boot)
+                    H_aeroRef_aeroBody[0][3],   # Global X position
+                    H_aeroRef_aeroBody[1][3],   # Global Y position
+                    #H_aeroRef_aeroBody[2][3],   # Global Z position
+                    rangefinder_dis,
+                    rpy_rad[0],	                # Roll angle
+                    rpy_rad[1],	                # Pitch angle
+                    rpy_rad[2],	                # Yaw angle
+                    covariance,                 # Row-major representation of pose 6x6 cross-covariance matrix
+                    reset_counter               # Estimate reset counter. Increment every time pose estimate jumps.
+                )
+            else:
+                conn.mav.vision_position_estimate_send(
+                    current_time_us,            # us Timestamp (UNIX time or time since system boot)
+                    H_aeroRef_aeroBody[0][3],   # Global X position
+                    H_aeroRef_aeroBody[1][3],   # Global Y position
+                    H_aeroRef_aeroBody[2][3],   # Global Z position
+                    #rangefinder_dis,
+                    rpy_rad[0],	                # Roll angle
+                    rpy_rad[1],	                # Pitch angle
+                    rpy_rad[2],	                # Yaw angle
+                    covariance,                 # Row-major representation of pose 6x6 cross-covariance matrix
+                    reset_counter               # Estimate reset counter. Increment every time pose estimate jumps.
+                )
 
 # https://mavlink.io/en/messages/ardupilotmega.html#VISION_POSITION_DELTA
 def send_vision_position_delta_message():
@@ -526,7 +547,9 @@ signal.setitimer(signal.ITIMER_REAL, 0)  # cancel alarm
 sched = BackgroundScheduler()
 
 if enable_msg_vision_position_estimate:
+    if 
     sched.add_job(send_vision_position_estimate_message, 'interval', seconds = 1/vision_position_estimate_msg_hz, max_instances=2)
+
 
 if enable_msg_vision_position_delta:
     sched.add_job(send_vision_position_delta_message, 'interval', seconds = 1/vision_position_delta_msg_hz, max_instances=2)
