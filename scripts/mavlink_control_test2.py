@@ -1,14 +1,6 @@
-# 测试项目为,起飞0.5m高度，向前1米，然后降落
+# 测试项目为,起飞0.5m，然后设置其yaw为0，为下一个测试项目做基础。
 # #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-######################################################
-##  Sending control commands to AP via MAVLink      ##
-##  Based on set_attitude_target.py: https://github.com/dronekit/dronekit-python/blob/master/examples/set_attitude_target/set_attitude_target.py
-######################################################
-
-## Additional installation for SITL:
-##      pip3 install dronekit-sitl -UI
 
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
 from pymavlink import mavutil # Needed for command message definitions
@@ -354,10 +346,9 @@ try:
             arm_and_takeoff_nogps(0.5)
             print("Hold position for 3 seconds")
             set_attitude(duration = 3)
-            if (vehicle.mode.name == "LOITER") and (rc_channel_value > rc_control_thres):
-                pos_control_align_north_and_move_1m()
-            elif (vehicle.mode.name == "GUIDED") and (rc_channel_value > rc_control_thres):
-                vel_control_align_north_and_move_1m()
+            time.sleep(3)
+            print("Yaw 0 absolute (North)")
+            condition_yaw(0)
         else:
             print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
             time.sleep(1)
