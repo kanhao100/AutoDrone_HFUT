@@ -10,6 +10,7 @@ import sys
 import cv2
 import numpy as np
 import math as m
+
 #######################################
 # Global variables
 #######################################
@@ -62,7 +63,7 @@ def send_land_message(x, y):
         mavutil.mavlink.MAV_FRAME_BODY_NED, # frame, not used #疑问：为什么给的注释是not used，未来的测试点
         (x-horizontal_resolution/2)*horizontal_fov/horizontal_resolution,                       # X-axis angular offset, in radians
         (y-vertical_resolution/2)*vertical_fov/vertical_resolution,                       # Y-axis angular offset, in radians
-        0,                           # distance, in meters
+        rangefinder_dis_land,                           # distance, in meters
         0,                                  # Target x-axis size, in radians
         0,                                  # Target y-axis size, in radians
         0,                                  # x	float	X Position of the landing target on MAV_FRAME
@@ -90,6 +91,14 @@ while(True):
         #cv2.drawContours(canny_dection_new, contours, -1, (255, 255, 255), 1)
         circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 20, param1=100, param2=50, minRadius=30, maxRadius=120)
         #frame_circles=frame.copy()
+        try:
+            rangefinder_dis_land = round(Vehicle.rangefinder,3) - 0.12
+            rangefinder_dis_flag = True
+            #print("rangefinder_dis: %s" %rangefinder_dis)
+        except:
+            rangefinder_dis_flag = False
+            print("Can't read the value of rangefinder")
+        
         if circle1 is None:
             pass
         else:
@@ -101,7 +110,12 @@ while(True):
                 x = i[0]
                 y = i[1]
             if x is not None:
-                send_land_message(x,y)
+                if y is not None:
+                    send_land_message(x,y)
+                    print("got a land message")
+            else:
+                print("LAND MESSAGE IS FALSE!")
+                pass
         #cv2.imshow('frame', frame)
         #cv2.imshow('gray', gray)
         #cv2.imshow('gaussian_smoothing', gaussian_smoothing)

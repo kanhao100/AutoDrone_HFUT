@@ -288,7 +288,7 @@ def send_vision_position_estimate_message():
                 #progress("rangefinder_dis: %s" %rangefinder_dis)
             except:
                 rangefinder_dis_flag = False
-                progres("Can't read the value of rangefinder")
+                progress("Can't read the value of rangefinder")
             # Send the message
             if rangefinder_dis_flag:
                 conn.mav.vision_position_estimate_send(
@@ -547,7 +547,6 @@ signal.setitimer(signal.ITIMER_REAL, 0)  # cancel alarm
 sched = BackgroundScheduler()
 
 if enable_msg_vision_position_estimate:
-    if 
     sched.add_job(send_vision_position_estimate_message, 'interval', seconds = 1/vision_position_estimate_msg_hz, max_instances=2)
 
 

@@ -29,14 +29,20 @@ def run_landing():
 def run_control():
     os.system("python3 mavlink_control.py --connect=" + connection_out_p03)
 
+def run_control_servo():
+    os.system("python3 control_servo.py --connect+" + connection_out_p03)
+
 thread1 = threading.Thread(target=mavproxy_create_connection)
 thread1.start()
 
 thread2 = threading.Thread(target=run_t265)
 thread2.start()
 
-thread3 = threading.Thread(target=run_landing)
-thread3.start()
+#thread3 = threading.Thread(target=run_landing)
+#thread3.start()
+
+thread4 = threading.Thread(target=run_control_servo)
+thread4.start()
 
 # thread4 = threading.Thread(target=run_control)
 # thread4.start()
