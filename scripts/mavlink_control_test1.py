@@ -1,4 +1,4 @@
-# 测试项目为悬停3秒然后降落
+# 测试项目为起飞0.5m,悬停5秒然后降落
 # #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -348,13 +348,15 @@ def vel_control_align_north_and_move_1m():
 
 try:
     # If using SITL: Take off in GUIDED_NOGPS mode.
-    if rc_channel_value > rc_control_thres):
-        arm_and_takeoff_nogps(20)
-        print("Hold position for 3 seconds")
-        set_attitude(duration = 3)
-    else:
-    print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
-    time.sleep(1)
+    while(True):
+        if rc_channel_value > rc_control_thres):
+            arm_and_takeoff_nogps(0.5)
+            print("Hold position for 3 seconds")
+            set_attitude(duration = 5)
+            break
+        else:
+            print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
+            time.sleep(1)
 
     print("Setting LAND mode...")
     vehicle.mode = VehicleMode("LAND")

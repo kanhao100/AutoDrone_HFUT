@@ -54,6 +54,10 @@ if not connection_string:
 print('Connecting to vehicle on: %s' % connection_string)
 vehicle = connect(connection_string, wait_ready=True)
 
+@vehicle.on_message('RANGEFINDER')
+def listener(self, name, message):
+    rangefinder_dis_land = message.distance - 0.12
+
 
 def send_land_message(x, y):
     global current_time_us
@@ -91,14 +95,15 @@ while(True):
         #cv2.drawContours(canny_dection_new, contours, -1, (255, 255, 255), 1)
         circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 20, param1=100, param2=50, minRadius=30, maxRadius=120)
         #frame_circles=frame.copy()
+        '''
         try:
-            rangefinder_dis_land = round(Vehicle.rangefinder,3) - 0.12
+            rangefinder_dis_land = round(vehicle.rangefinder,3) - 0.12
             rangefinder_dis_flag = True
             #print("rangefinder_dis: %s" %rangefinder_dis)
         except:
             rangefinder_dis_flag = False
             print("Can't read the value of rangefinder")
-        
+        '''
         if circle1 is None:
             pass
         else:

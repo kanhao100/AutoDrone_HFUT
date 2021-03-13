@@ -1,4 +1,4 @@
-# 测试项目为向前两米然后降落
+# 测试项目为,起飞0.5m高度，向前1米，然后降落
 # #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -273,8 +273,8 @@ def pos_control_align_north_and_move_1m():
 
     print("SQUARE path using SET_POSITION_TARGET_LOCAL_NED and position parameters")
     DURATION_SEC = 2 #Set duration for each segment.
-    HEIGHT_M = 1
-    SIZE_M  = 2
+    HEIGHT_M = 0.5
+    SIZE_M  = 1
 
     """
     Fly the vehicle in a SIZE_M meter square path, using the SET_POSITION_TARGET_LOCAL_NED command 
@@ -346,27 +346,26 @@ def vel_control_align_north_and_move_1m():
 # Main program starts here
 #######################################
 
-try:
-    # If using SITL: Take off in GUIDED_NOGPS mode.
-    if sitl is not None:
-        arm_and_takeoff_nogps(20)
-        print("Hold position for 3 seconds")
-        set_attitude(duration = 3)
-    
+try: 
     # Wait until the RC channel is turned on and the corresponding channel is switch
-    print("Starting autonomous control...")
     while True:
-        if (vehicle.mode.name == "LOITER") and (rc_channel_value > rc_control_thres):
-            pos_control_align_north_and_move_1m()
-        elif (vehicle.mode.name == "GUIDED") and (rc_channel_value > rc_control_thres):
-            vel_control_align_north_and_move_1m()
+        if rc_channel_value > rc_control_thres):
+            print("Starting autonomous control...")
+            arm_and_takeoff_nogps(0.5)
+            print("Hold position for 3 seconds")
+            set_attitude(duration = 3)
+            if (vehicle.mode.name == "LOITER") and (rc_channel_value > rc_control_thres):
+                pos_control_align_north_and_move_1m()
+            elif (vehicle.mode.name == "GUIDED") and (rc_channel_value > rc_control_thres):
+                vel_control_align_north_and_move_1m()
         else:
             print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
             time.sleep(1)
+
     print("Setting LAND mode...")
     vehicle.mode = VehicleMode("LAND")
-    time.sleep(30)
-    #vehicle.armed = False
+    time.sleep(1)
+    vehicle.armed = False
     # Close vehicle object before exiting script
     print("Close vehicle object")
     vehicle.close()
