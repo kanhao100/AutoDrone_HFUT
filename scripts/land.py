@@ -56,6 +56,7 @@ vehicle = connect(connection_string, wait_ready=True)
 
 @vehicle.on_message('RANGEFINDER')
 def listener(self, name, message):
+    global rangefinder_dis_land
     rangefinder_dis_land = message.distance - 0.12
 
 
