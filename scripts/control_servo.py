@@ -3,7 +3,7 @@ from pymavlink import mavutil # Needed for command message definitions
 import time
 # Set MAVLink protocol to 2.
 import os
-os.environ["MAVLINK20"] = "1"
+os.environ["MAVLINK10"] = "1"
 import sys
 import cv2
 import numpy as np
@@ -35,7 +35,7 @@ def listener(self, name, message):
     print ('distance: %s' % message.distance)
 
 '''
-#Ã÷ÌìĞèÒªĞŞ¸Ä
+#æ˜å¤©éœ€è¦ä¿®æ”¹
 @vehicle.on_message('RC_CHANNELS')
 def listener(self, name, message):
     global chan8
@@ -83,7 +83,7 @@ def send_land_message():
 
 def do_set_servo(servo_number,pwm):
     msg = vehicle.message_factory.command_long_encode(
-        0,0,
+        0,0,0,
         mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
         servo_number,
         pwm,
@@ -91,21 +91,25 @@ def do_set_servo(servo_number,pwm):
         0,
         0,
         0,
-        0,
         0
     )
     vehicle.send_mavlink(msg)
+    print("succeess")
+#vehicle.mode = VehicleMode ("MANUAL")
 time.sleep(10)
-#print (" Ch8: %s" % vehicle.channels['8'])
+print (" Ch8: %s" % vehicle.channels['8'])
 vehicle.channels.overrides['8'] = 1130
 time.sleep(2)
 print (" Ch8: %s" % vehicle.channels['8'])
 do_set_servo(9,1130)
-print (" Ch8: %s" % vehicle.channels['8'])
 print("success!")
 
 while(True):
+    vehicle.channels.overrides={'8':1130}
     #rangefinder_dis_land = round(vehicle.rangefinder,3) - 0.12
     time.sleep(0.5)
     print(rangefinder_dis_land)
     send_land_message()
+
+
+
