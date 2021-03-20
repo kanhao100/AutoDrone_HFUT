@@ -349,7 +349,7 @@ def vel_control_align_north_and_move_1m():
 try:
     # If using SITL: Take off in GUIDED_NOGPS mode.
     while(True):
-        if rc_channel_value > rc_control_thres):
+        if (rc_channel_value > rc_control_thres):
             arm_and_takeoff_nogps(0.5)
             print("Hold position for 3 seconds")
             set_attitude(duration = 5)

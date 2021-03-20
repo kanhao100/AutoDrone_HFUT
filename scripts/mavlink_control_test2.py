@@ -341,7 +341,7 @@ def vel_control_align_north_and_move_1m():
 try: 
     # Wait until the RC channel is turned on and the corresponding channel is switch
     while True:
-        if rc_channel_value > rc_control_thres):
+        if (rc_channel_value > rc_control_thres):
             print("Starting autonomous control...")
             arm_and_takeoff_nogps(0.5)
             print("Hold position for 3 seconds")
