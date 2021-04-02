@@ -35,7 +35,7 @@ def listener(self, name, message):
     print ('distance: %s' % message.distance)
 
 '''
-#明天需要修改
+#明天需要修�?
 @vehicle.on_message('RC_CHANNELS')
 def listener(self, name, message):
     global chan8
@@ -94,6 +94,7 @@ def do_set_servo(servo_number,pwm):
         0
     )
     vehicle.send_mavlink(msg)
+    vehicle.flush()
     print("succeess")
 #vehicle.mode = VehicleMode ("MANUAL")
 time.sleep(10)
@@ -109,7 +110,7 @@ while(True):
     #rangefinder_dis_land = round(vehicle.rangefinder,3) - 0.12
     time.sleep(0.5)
     print(rangefinder_dis_land)
-    send_land_message()
+    #send_land_message()
 
 
 

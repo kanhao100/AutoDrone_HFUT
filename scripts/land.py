@@ -47,7 +47,7 @@ capture.set(cv2.CAP_PROP_FRAME_HEIGHT, vertical_resolution)
 #capture.set(cv2.CAP_PROP_FPS, 60)
 #frame =cv2.imread("./3.jpg")
 #capture.set(cv2.CAP_PROP_CONTRAST,50)
-if (enable_capture_save):
+if enable_capture_save:
     time_print = time.strftime("%Y-%m-%d-%H-%M-%S",time.localtime(int(time.time())))
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
     outfile = cv2.VideoWriter('output'+'{}'.format(time_print)+'.avi', fourcc, 30., (640, 480))
@@ -130,7 +130,7 @@ while(True):
             circles = circle1[0, :, :]  # 提取为二维
             circles = np.uint16(np.around(circles))  # 四舍五入，取整
             for i in circles[:]:
-                if (enable_capture_save):
+                if enable_capture_save:
                     cv2.circle(frame_circles, (i[0], i[1]), i[2], (255, 0, 0), 2)  # 画圆
                     cv2.circle(frame_circles, (i[0], i[1]), 2, (255, 0, 0), 2)  # 画圆心
                 x = i[0]
@@ -140,7 +140,7 @@ while(True):
             if x is not None:
                 if y is not None:
                     send_land_message(x,y)
-                    if (enable_capture_save):
+                    if enable_capture_save:
                         cv2.putText(frame_circles, '{}'.format('got a land target'), (0,30), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
                         cv2.putText(frame_circles, 'x:{} , y:{}'.format(x,y), (0,45), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
                         cv2.putText(frame_circles, 'angle_x:{} , angle_y:{}'.format(round(angle_x,6),round(angle_y,6)), (0,60), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
@@ -160,7 +160,7 @@ while(True):
     if cv2.waitKey(1) & 0xFF == 27:
             break
     
-    if (enable_capture_save):
+    if enable_capture_save:
         if ret is not None:
             #画面添加高度信息
             cv2.putText(frame_circles, 'dis:{}m'.format(round(rangefinder_dis_land+0.12,2)), (0,15), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)

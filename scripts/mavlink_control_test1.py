@@ -93,7 +93,8 @@ def arm_and_takeoff_nogps(aTargetAltitude):
 
     print("Arming motors")
     # Copter should arm in GUIDED_NOGPS mode
-    vehicle.mode = VehicleMode("LOITER")
+    #vehicle.mode = VehicleMode("LOITER")
+    vehicle.mode = VehicleMode("GUIDED")
     vehicle.armed = True
     while not vehicle.armed:
         print("- Waiting for arming...")
@@ -336,10 +337,10 @@ try:
     # If using SITL: Take off in GUIDED_NOGPS mode.
     while(True):
         if (rc_channel_value > rc_control_thres):
-            control_f.arm_and_takeoff_nogps(0.5)
-            print("Hold position for 3 seconds")
-            control_f.set_attitude(duration = 5)
-            control_f.condition_yaw
+            arm_and_takeoff_nogps(0.5)
+            print("Hold position for 5 seconds")
+            set_attitude(duration = 5)
+            #condition_yaw(0)
             break
         else:
             print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
