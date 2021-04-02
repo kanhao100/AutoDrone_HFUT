@@ -11,7 +11,7 @@ capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height / 2)
 capture.set(cv2.CAP_PROP_FPS, 60)
 '''
 starttime=time.time()
-frame =cv2.imread("./7.jpg")
+frame =cv2.imread("./H4.jpg")
 print(frame.shape)
 frame =cv2.resize(frame, (0, 0), fx=1/3, fy=1/3, interpolation=cv2.INTER_NEAREST)
 #capture.set(cv2.CAP_PROP_CONTRAST,50)
