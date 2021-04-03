@@ -1,5 +1,3 @@
-## Additional installation for SITL:
-##      pip3 install dronekit-sitl -UI
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
 from pymavlink import mavutil # Needed for command message definitions
 import time
@@ -16,6 +14,10 @@ import math as m
 #######################################
 #是否开启录像保存
 enable_capture_save = True
+
+#开启获取数据集模式，即另外保存一个仅将高度打在屏幕上的录像
+#必须先开启上面那个参数
+enable_capture_simple = True
 
 #精确降落部分#
 #相机fov参数设置
@@ -51,6 +53,8 @@ if enable_capture_save:
     time_print = time.strftime("%Y-%m-%d-%H-%M-%S",time.localtime(int(time.time())))
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
     outfile = cv2.VideoWriter('output'+'{}'.format(time_print)+'.avi', fourcc, 30., (640, 480))
+    if enable_capture_simple:
+    outfile_simple = cv2.VideoWriter('s_output'+'{}'.format(time_print)+'.avi', fourcc, 30., (640, 480))
 
 connection_string = args.connect
 sitl = None
@@ -120,7 +124,7 @@ while(True):
         #contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         #cv2.drawContours(canny_dection_new, contours, -1, (255, 255, 255), 1)
 
-        circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 20, param1=100, param2=50, minRadius=30, maxRadius=120)
+        circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 400, param1=40, param2=75, minRadius=20, maxRadius=320)
         #需要调参
 
         frame_circles=frame.copy()
@@ -172,22 +176,22 @@ while(True):
     if enable_capture_save:
         if ret is not None:
             #if vehicle.mode.name == "LAND":
-            if True:
-                #画面添加高度信息
-                cv2.putText(frame_circles, 'distance:{}m'.format(round(rangefinder_dis_land+0.12,2)), (0,15), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)
-                #添加FPS信息
-                endtime = time.time()
-                if endtime != starttime:
-                    cv2.putText(frame_circles, 'FPS:{}'.format(1/(endtime - starttime)), (0,30), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
-                #写入文件
-                #写入绘制了圆和圆心的图像
-                outfile.write(frame_circles)
-            else:
-                cv2.putText(frame, 'distance:{}m'.format(round(rangefinder_dis_land+0.12,2)), (0,15), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)
-                endtime = time.time()
-                if endtime != starttime:
-                    cv2.putText(frame, 'FPS:{}'.format(1/(endtime - starttime)), (0,30), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
-                outfile.write(frame)
+            #画面添加高度信息
+            cv2.putText(frame_circles, 'distance:{}m'.format(round(rangefinder_dis_land+0.12,2)), (0,15), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)
+            #添加FPS信息
+            endtime = time.time()
+            if endtime != starttime:
+                cv2.putText(frame_circles, 'FPS:{}'.format(1/(endtime - starttime)), (0,30), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
+            #写入文件
+            #写入绘制了圆和圆心的图像
+            outfile.write(frame_circles)
+            #踩点模式
+            if enable_capture_simple:
+                cv2.putText(frame, '{}'.format(round(rangefinder_dis_land+0.12,2)), (0,15), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)
+                #endtime = time.time()
+                #if endtime != starttime:
+                #    cv2.putText(frame, 'FPS:{}'.format(1/(endtime - starttime)), (0,30), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
+                outfile_simple.write(frame)
                 #cv2.imshow('frame', frame)
 
 

@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-
-# Install required packages: 
 #   pip3 install MAVProxy
-
 import os
 import threading
 
