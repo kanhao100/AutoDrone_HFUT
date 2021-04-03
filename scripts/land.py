@@ -19,6 +19,9 @@ enable_capture_save = True
 #必须先开启上面那个参数
 enable_capture_simple = True
 
+#输入检测的圆的实际直径,单位m
+d_true = 0.6
+
 #精确降落部分#
 #相机fov参数设置
 horizontal_fov = 73.3 * m.pi/180
@@ -148,15 +151,19 @@ while(True):
                     cv2.circle(frame_circles, (i[0], i[1]), 2, (255, 0, 0), 2)  # 画圆心
                 x = i[0]
                 y = i[1]
+                r = i[2]
                 angle_x = (x-horizontal_resolution/2)*horizontal_fov/horizontal_resolution
                 angle_y = (y-vertical_resolution/2)*vertical_fov/vertical_resolution
+                r_x = (d_true*horizontal_resolution)/(2*(rangefinder_dis_land+0.12)*horizontal_fov)
+                r_y = (d_true*vertical_resolution)/(2*(rangefinder_dis_land+0.12)*vertical_fov)
             if x is not None:
                 if y is not None:
                     send_land_message(x,y)
                     if enable_capture_save:
                         cv2.putText(frame_circles, '{}'.format('got a land target'), (0,45), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
-                        cv2.putText(frame_circles, 'x:{} , y:{}'.format(x,y), (0,60), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
+                        cv2.putText(frame_circles, 'x:{},y:{},r:{}'.format(x,y,r), (0,60), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
                         cv2.putText(frame_circles, 'angle_x:{} , angle_y:{}'.format(round(angle_x,6),round(angle_y,6)), (0,75), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
+                        cv2.putText(frame_circles, 'r_x:{},r_y:{}'.format(r_x,r_y), (0,90), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
                     print("send a land message")
             else:
                 print("LAND MESSAGE IS FALSE!")
