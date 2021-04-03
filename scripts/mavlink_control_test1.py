@@ -93,6 +93,7 @@ def arm_and_takeoff_nogps(aTargetAltitude):
 
     print("Arming motors")
     # Copter should arm in GUIDED_NOGPS mode
+    
     #vehicle.mode = VehicleMode("LOITER")
     vehicle.mode = VehicleMode("GUIDED")
     vehicle.armed = True

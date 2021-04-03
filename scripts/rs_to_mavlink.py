@@ -8,7 +8,7 @@ import threading
 
 enable_control = False #危险操作,无开发人员在场请勿修改
 
-enable_servo = False
+enable_servo = False #可能存在危险,拆桨测试
 
 enable_land = True
 
@@ -17,7 +17,6 @@ connection_in_baud = "921600"
 connection_out_p01 = "127.0.0.1:14550"      # T265
 connection_out_p02 = "127.0.0.1:14560"      # 
 connection_out_p03 = "127.0.0.1:14570"      # Control (GUIDED)
-
 
 def mavproxy_create_connection():
     os.system("mavproxy.py" + \

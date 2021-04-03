@@ -72,9 +72,16 @@ def listener(self, name, message):
 @vehicle.on_message('LANDING_TARGET')
 def listener(self,name,message):
     global got_landing_massage
+    print(message)
     if message is not None:
         got_landing_massage = True
         print("got a land message")
+
+'''
+@vehicle.on_message('*')
+def listener(self, name, message):
+    print ('message: {}'.format(message))
+'''
 
 def send_land_message(x, y):
     global current_time_us
@@ -100,7 +107,8 @@ def send_land_message(x, y):
 while(True):
     starttime = time.time()
     ret, frame = capture.read()
-    if (vehicle.mode.name == "LAND"):
+    #if (vehicle.mode.name == "LAND"):
+    if True:
         current_time_us = int(round(time.time() * 1000000))
         #灰度化
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -114,7 +122,8 @@ while(True):
 
         circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 20, param1=100, param2=50, minRadius=30, maxRadius=120)
         #需要调参
-        #frame_circles=frame.copy()
+
+        frame_circles=frame.copy()
         '''
         try:
             rangefinder_dis_land = round(vehicle.rangefinder,3) - 0.12
@@ -141,9 +150,9 @@ while(True):
                 if y is not None:
                     send_land_message(x,y)
                     if enable_capture_save:
-                        cv2.putText(frame_circles, '{}'.format('got a land target'), (0,30), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
-                        cv2.putText(frame_circles, 'x:{} , y:{}'.format(x,y), (0,45), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
-                        cv2.putText(frame_circles, 'angle_x:{} , angle_y:{}'.format(round(angle_x,6),round(angle_y,6)), (0,60), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
+                        cv2.putText(frame_circles, '{}'.format('got a land target'), (0,45), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
+                        cv2.putText(frame_circles, 'x:{} , y:{}'.format(x,y), (0,60), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
+                        cv2.putText(frame_circles, 'angle_x:{} , angle_y:{}'.format(round(angle_x,6),round(angle_y,6)), (0,75), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
                     print("send a land message")
             else:
                 print("LAND MESSAGE IS FALSE!")
@@ -162,16 +171,23 @@ while(True):
     
     if enable_capture_save:
         if ret is not None:
-            #画面添加高度信息
-            cv2.putText(frame_circles, 'dis:{}m'.format(round(rangefinder_dis_land+0.12,2)), (0,15), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)
-            #添加FPS信息
-            if endtime != starttime:
-                cv2.putText(frame_circles, 'FPS:{}'.format(1/(endtime - starttime)), (0,75), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
-            #写入文件
-            #写入原图像
-            #outfile.write(frame)
-            #写入绘制了圆和圆心的图像
-            outfile.write(frame_circles)
-            #cv2.imshow('frame', frame)
+            #if vehicle.mode.name == "LAND":
+            if True:
+                #画面添加高度信息
+                cv2.putText(frame_circles, 'distance:{}m'.format(round(rangefinder_dis_land+0.12,2)), (0,15), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)
+                #添加FPS信息
+                endtime = time.time()
+                if endtime != starttime:
+                    cv2.putText(frame_circles, 'FPS:{}'.format(1/(endtime - starttime)), (0,30), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
+                #写入文件
+                #写入绘制了圆和圆心的图像
+                outfile.write(frame_circles)
+            else:
+                cv2.putText(frame, 'distance:{}m'.format(round(rangefinder_dis_land+0.12,2)), (0,15), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 255, 0), 1, lineType=cv2.LINE_AA)
+                endtime = time.time()
+                if endtime != starttime:
+                    cv2.putText(frame, 'FPS:{}'.format(1/(endtime - starttime)), (0,30), cv2.FONT_HERSHEY_COMPLEX,0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
+                outfile.write(frame)
+                #cv2.imshow('frame', frame)
 
 
