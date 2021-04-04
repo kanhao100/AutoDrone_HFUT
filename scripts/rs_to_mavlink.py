@@ -8,6 +8,8 @@ enable_servo = False #可能存在危险,拆桨测试
 
 enable_land = True
 
+enable_t265_low_rate = False
+
 connection_in_port = "/dev/ttyACM0"
 connection_in_baud = "921600"
 connection_out_p01 = "127.0.0.1:14550"      # T265
@@ -25,6 +27,9 @@ def mavproxy_create_connection():
 def run_t265():
     os.system("python3 t265_to_mavlink.py --connect=" + connection_out_p01)
 
+def run_t265_low_rate():
+    os.system("python3 t265_to_mavlink_lowrate.py --connect=" + connection_out_p01")
+
 def run_landing():
     os.system("python3 land.py --connect=" + connection_out_p02)
 
@@ -37,8 +42,12 @@ def run_control_servo():
 thread1 = threading.Thread(target=mavproxy_create_connection)
 thread1.start()
 
-thread2 = threading.Thread(target=run_t265)
-thread2.start()
+if enable_t265_low_rate:
+    thread2 = threading.Thread(target=run_t265_low_rate)
+    thread2.start()
+else:
+    thread2 = threading.Thread(target=run_t265)
+    thread2.start()
 
 if enable_land:
     thread3 = threading.Thread(target=run_landing)
