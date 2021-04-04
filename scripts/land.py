@@ -20,7 +20,7 @@ enable_capture_save = True
 enable_capture_simple = True
 
 #输入检测的圆的实际直径,单位m
-d_true = 0.6
+d_true = 0.5
 
 #精确降落部分#
 #相机fov参数设置
@@ -57,7 +57,7 @@ if enable_capture_save:
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
     outfile = cv2.VideoWriter('output'+'{}'.format(time_print)+'.avi', fourcc, 30., (640, 480))
     if enable_capture_simple:
-    outfile_simple = cv2.VideoWriter('s_output'+'{}'.format(time_print)+'.avi', fourcc, 30., (640, 480))
+        outfile_simple = cv2.VideoWriter('s_output'+'{}'.format(time_print)+'.avi', fourcc, 30., (640, 480))
 
 connection_string = args.connect
 sitl = None

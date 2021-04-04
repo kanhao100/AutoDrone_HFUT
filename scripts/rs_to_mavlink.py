@@ -28,7 +28,7 @@ def run_t265():
     os.system("python3 t265_to_mavlink.py --connect=" + connection_out_p01)
 
 def run_t265_low_rate():
-    os.system("python3 t265_to_mavlink_lowrate.py --connect=" + connection_out_p01")
+    os.system("python3 t265_to_mavlink_lowrate.py --connect=" + connection_out_p01)
 
 def run_landing():
     os.system("python3 land.py --connect=" + connection_out_p02)
