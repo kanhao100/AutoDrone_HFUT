@@ -126,8 +126,10 @@ while(True):
         #ret, thresh = cv2.threshold(gaussian_smoothing, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
         #contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         #cv2.drawContours(canny_dection_new, contours, -1, (255, 255, 255), 1)
-
-        circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 400, param1=40, param2=75, minRadius=20, maxRadius=320)
+        if round(rangefinder_dis_land+0.12,2) >= 1.5:
+            circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 400, param1=50, param2=75, minRadius=20, maxRadius=320)
+        else:
+            circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 400, param1=100, param2=75, minRadius=20, maxRadius=320)
         #需要调参
 
         frame_circles=frame.copy()
