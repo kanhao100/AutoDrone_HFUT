@@ -18,7 +18,7 @@ enable_capture_save = True
 
 # 开启获取数据集模式(踩点模式)，即另外保存一个仅将高度打在屏幕上的录像
 # 可以单独开启
-enable_capture_simple = True
+enable_capture_simple = False
 
 # 输入检测的圆的实际直径,单位m
 d_true = 0.5
@@ -28,8 +28,8 @@ d_true = 0.5
 horizontal_fov = 73.3 * m.pi/180
 vertical_fov = 58.3 * m.pi/180
 # 分辨率
-horizontal_resolution = 640
-vertical_resolution = 480
+horizontal_resolution = 320
+vertical_resolution = 240
 
 current_time_us = 0
 #######################################
@@ -58,10 +58,10 @@ if enable_capture_save:
         "%Y-%m-%d-%H-%M-%S", time.localtime(int(time.time())))
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
     outfile = cv2.VideoWriter(
-        'output'+'{}'.format(time_print)+'.avi', fourcc, 30., (640, 480))
+        'output'+'{}'.format(time_print)+'.avi', fourcc, 30., (horizontal_resolution, vertical_resolution))
 if enable_capture_simple:
     outfile_simple = cv2.VideoWriter(
-        's_output'+'{}'.format(time_print)+'.avi', fourcc, 30., (640, 480))
+        's_output'+'{}'.format(time_print)+'.avi', fourcc, 30., (horizontal_resolution, vertical_resolution))
 
 connection_string = args.connect
 sitl = None
@@ -138,13 +138,20 @@ while(True):
         #ret, thresh = cv2.threshold(gaussian_smoothing, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
         #contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         #cv2.drawContours(canny_dection_new, contours, -1, (255, 255, 255), 1)
-        if round(rangefinder_dis_land+0.12, 2) >= 1.5:
+        if round(rangefinder_dis_land+0.12, 2) >= 1.6:
             circle1 = cv2.HoughCircles(
-                gray, cv2.HOUGH_GRADIENT, 1, 400, param1=50, param2=75, minRadius=20, maxRadius=320)
+                gray, cv2.HOUGH_GRADIENT, 1, 400, param1=50, param2=75, minRadius=10, maxRadius=50)
         else:
             circle1 = cv2.HoughCircles(
-                gray, cv2.HOUGH_GRADIENT, 1, 400, param1=100, param2=75, minRadius=20, maxRadius=320)
+                gray, cv2.HOUGH_GRADIENT, 1, 400, param1=100, param2=75, minRadius=30, maxRadius=160)
         # 需要调参
+        #method: 检测方法，有HOUGH_GRADIENT以HOUGH_GRADIENT_ALT两种方法选择及
+        #dp: 累加器分辨率与图像分辨率的反比，如果dp=1，累加器的分辨率与输入图像相同。如果dp=2，蓄能器有宽度和高度的一半。对于HOUGH_梯度_ALT，建议值为dp=1.5，
+        #minDist: 检测到的圆中心之间的最小距离。如果参数是太小，除了一个真实的圆外，可能会错误地检测到多个相邻圆。如果是的话太大，可能会漏掉一些圆圈
+        #param1: 在HOUGH_GRADIENT和HOUGH_GRADIENT_ALT两种模式时，它是传递给Canny边缘检测器的两个阈值中较高的一个（较低的阈值小两倍），注意HOUGH_GRADIENT_ALT模式使用Scharr算法，所以阈值通常较高
+        #param2: 该值越小，可以检测到更多根本不存在的圆，该值越大，能通过检测的圆就更加接近完美的圆形
+        #minRadius: 检测圆形的最小半径
+        #maxRadius: 检测圆形的最大半径
 
         frame_circles = frame.copy()
         '''

@@ -62,10 +62,10 @@ enable_update_tracking_confidence_to_gcs = True
 update_tracking_confidence_to_gcs_hz_default = 1.0
 
 # Monitor user's online input via keyboard, can only be used when runs from terminal
-enable_user_keyboard_input = False
+enable_user_keyboard_input = True
 
 # Default global position for EKF home/ origin
-enable_auto_set_ekf_home = False
+enable_auto_set_ekf_home = True
 home_lat = 151269321    # Somewhere random
 home_lon = 16624301     # Somewhere random
 home_alt = 163000       # Somewhere random
