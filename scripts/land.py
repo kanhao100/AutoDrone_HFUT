@@ -18,7 +18,7 @@ enable_capture_save = True
 
 # 开启获取数据集模式(踩点模式)，即另外保存一个仅将高度打在屏幕上的录像
 # 可以单独开启
-enable_capture_simple = False
+enable_capture_simple = True
 
 # 输入检测的圆的实际直径,单位m
 d_true = 0.5
@@ -28,8 +28,8 @@ d_true = 0.5
 horizontal_fov = 73.3 * m.pi/180
 vertical_fov = 58.3 * m.pi/180
 # 分辨率
-horizontal_resolution = 320
-vertical_resolution = 240
+horizontal_resolution = 640
+vertical_resolution = 480
 
 current_time_us = 0
 #######################################
@@ -138,12 +138,12 @@ while(True):
         #ret, thresh = cv2.threshold(gaussian_smoothing, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
         #contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         #cv2.drawContours(canny_dection_new, contours, -1, (255, 255, 255), 1)
-        if round(rangefinder_dis_land+0.12, 2) >= 1.6:
+        if (rangefinder_dis_land+0.12) >= 1.6:
             circle1 = cv2.HoughCircles(
-                gray, cv2.HOUGH_GRADIENT, 1, 400, param1=50, param2=75, minRadius=10, maxRadius=50)
+                gray, cv2.HOUGH_GRADIENT, 1, 400, param1=50, param2=75, minRadius=20, maxRadius=100)
         else:
             circle1 = cv2.HoughCircles(
-                gray, cv2.HOUGH_GRADIENT, 1, 400, param1=100, param2=75, minRadius=30, maxRadius=160)
+                gray, cv2.HOUGH_GRADIENT, 1, 400, param1=100, param2=75, minRadius=60, maxRadius=320)
         # 需要调参
         #method: 检测方法，有HOUGH_GRADIENT以HOUGH_GRADIENT_ALT两种方法选择及
         #dp: 累加器分辨率与图像分辨率的反比，如果dp=1，累加器的分辨率与输入图像相同。如果dp=2，蓄能器有宽度和高度的一半。对于HOUGH_梯度_ALT，建议值为dp=1.5，
@@ -201,7 +201,14 @@ while(True):
                             angle_y, 6)), (0, 75), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
                         cv2.putText(frame_circles, 'r_x:{},r_y:{}'.format(
                             r_x, r_y), (0, 90), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 255), 1, lineType=cv2.LINE_AA)
-                    print("send a land message")
+                    endtime = time.time()
+                    if endtime != starttime:
+                        print("send a land message, FPS:{}".format(1/(endtime - starttime)))
+                    else:
+                        print("send a land message, FPS:error")
+                else:
+                    print("LAND MESSAGE IS FALSE!")
+                    pass
             else:
                 print("LAND MESSAGE IS FALSE!")
                 pass
