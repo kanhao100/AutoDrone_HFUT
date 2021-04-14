@@ -4,9 +4,9 @@ import threading
 
 enable_control = False #危险操作,无开发人员在场请勿修改
 
-enable_servo = False #可能存在危险,拆桨测试
+enable_servo = True #可能存在危险,拆桨测试
 
-enable_land = True
+enable_land = False
 
 enable_t265_low_rate = False
 

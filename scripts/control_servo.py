@@ -104,8 +104,10 @@ vehicle.channels.overrides['8'] = 1130
 time.sleep(2)
 print (" Ch8: %s" % vehicle.channels['8'])
 
+vehicle.armed = True
+time.sleep(1.5)
 vehicle.mode = VehicleMode("AUTO")
-do_set_servo(9,1130)
+do_set_servo(5,2006)
 vehicle.mode = VehicleMode("LAND")
 
 print("success!")

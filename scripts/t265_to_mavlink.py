@@ -98,7 +98,6 @@ exit_code = 1
 #######################################
 # Global variables
 #######################################
-
 # FCU connection variables
 
 # Camera-related variables
@@ -276,7 +275,7 @@ def send_vision_position_estimate_message():
                 #progress("rangefinder_dis: %s" %rangefinder_dis)
             except:
                 rangefinder_dis_flag = False
-                progress("Can't read the value of rangefinder!!maybe rangefinder is bad or mavlink is bad")
+                #progress("Can't read the value of rangefinder!!maybe rangefinder is bad or mavlink is bad")
             # Send the message
             if rangefinder_dis_flag:
                 conn.mav.vision_position_estimate_send(
