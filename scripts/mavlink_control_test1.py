@@ -18,13 +18,13 @@ import math
 import os
 os.environ["MAVLINK20"] = "1"
 import sys
-import control_function
+#import control_function
 
 #######################################
 # Parameters
 #######################################
 
-rc_control_channel = 6     # Channel to check value, start at 0 == chan1_raw
+rc_control_channel = 5     # Channel to check value, start at 0 == chan1_raw
 rc_control_thres = 2000    # Values to check
 
 #######################################
@@ -74,8 +74,8 @@ def RC_CHANNEL_listener(vehicle, name, message):
     # print('%s attribute is: %s' % (name, message)) # Print all info from the messages
     # os.system('clear') # This helps in displaying the messages to be more readable
     # for channel in range(8):
-    #     print("Number of RC channels: ", message.chancount, ". Individual RC channel value:")
-    #     print(" CH", channel, curr_channels_values[channel])
+        #print("Number of RC channels: ", message.chancount, ". Individual RC channel value:")
+        # print(" CH", channel, curr_channels_values[channel])
 
 def arm_and_takeoff_nogps(aTargetAltitude):
     """
@@ -324,7 +324,6 @@ def vel_control_align_north_and_move_1m():
 
     # Control path using velocity commands
     print("Point the vehicle to a specific direction, then moves using SET_POSITION_TARGET_LOCAL_NED and velocity parameters")
-
     print("Yaw 0 absolute (North)")
     condition_yaw(0)
     send_ned_velocity(0, 0, 0, 1)
@@ -338,7 +337,16 @@ try:
     # If using SITL: Take off in GUIDED_NOGPS mode.
     while(True):
         if (rc_channel_value > rc_control_thres):
-            arm_and_takeoff_nogps(0.5)
+            #arm_and_takeoff_nogps(0.5)
+            vehicle.mode = VehicleMode("GUIDED")
+            vehicle.armed = True
+            time.sleep(1)
+            while not vehicle.armed:
+                print("- Waiting for arming...")
+                time.sleep(1)
+            print("Taking off!")
+            vehicle.simple_takeoff(1)
+            time.sleep(1)
             print("Hold position for 5 seconds")
             set_attitude(duration = 5)
             #condition_yaw(0)

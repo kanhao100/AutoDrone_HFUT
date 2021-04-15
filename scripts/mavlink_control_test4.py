@@ -1,3 +1,4 @@
+# 手动起飞，将RC开关变成2006，自动向前飞行1m,然后降落，然后控制舵机
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -260,12 +261,12 @@ def condition_yaw(heading, relative=False):
     vehicle.send_mavlink(msg)
 
 
-def pos_control_align_north_and_move_square():
+def pos_control_align_north_and_move_1m():
 
     print("SQUARE path using SET_POSITION_TARGET_LOCAL_NED and position parameters")
     DURATION_SEC = 2 #Set duration for each segment.
-    HEIGHT_M = 1
-    SIZE_M  = 2
+    HEIGHT_M = 0.6
+    SIZE_M  = 1
 
     """
     Fly the vehicle in a SIZE_M meter square path, using the SET_POSITION_TARGET_LOCAL_NED command 
@@ -287,28 +288,9 @@ def pos_control_align_north_and_move_square():
     condition_yaw(0)
     print("North (m): ", SIZE_M, ", East (m): 0m, Height (m):", HEIGHT_M," for", DURATION_SEC, "seconds")
     goto_position_target_local_ned(SIZE_M, 0, -HEIGHT_M)
-    time.sleep(DURATION_SEC)
+    # time.sleep(DURATION_SEC)
 
-    print("Yaw 90 absolute (East)")
-    condition_yaw(90)
-    print("North (m): ", SIZE_M, ", East (m): ", SIZE_M, " Height (m):", HEIGHT_M," for", DURATION_SEC, "seconds")
-    goto_position_target_local_ned(SIZE_M, SIZE_M, -HEIGHT_M)
-    time.sleep(DURATION_SEC)
-
-    print("Yaw 180 absolute (South)")
-    condition_yaw(180)
-    print("North (m): 0m, East (m): ", SIZE_M, ", Height (m):", HEIGHT_M," for", DURATION_SEC, "seconds")
-    goto_position_target_local_ned(0, SIZE_M, -HEIGHT_M)
-    time.sleep(DURATION_SEC)
-
-    print("Yaw 270 absolute (West)")
-    condition_yaw(270)
-    print("North (m): 0m, East (m): 0m, Height (m):", HEIGHT_M," for", DURATION_SEC, "seconds")
-    goto_position_target_local_ned(0, 0, -HEIGHT_M)
-    time.sleep(DURATION_SEC)
-
-
-def vel_control_align_north_and_move_square():
+def vel_control_align_north_and_move_1m():
     """
     Fly the vehicle in a path using velocity vectors (the underlying code calls the 
     SET_POSITION_TARGET_LOCAL_NED command with the velocity parameters enabled).
@@ -319,26 +301,26 @@ def vel_control_align_north_and_move_square():
     #Set up velocity vector to map to each direction.
     # vx > 0 => fly North
     # vx < 0 => fly South
-    NORTH = 0.5
-    SOUTH = -0.5
+    NORTH = 0.2
+    SOUTH = -0.2
     
     # Note for vy:
     # vy > 0 => fly East
     # vy < 0 => fly West
-    EAST = 0.5
-    WEST = -0.5
+    EAST = 0.2
+    WEST = -0.2
 
     # Note for vz: 
     # vz < 0 => ascend
     # vz > 0 => descend
-    UP = -0.5
-    DOWN = 0.5
+    UP = -0.2
+    DOWN = 0.2
     
     # Set duration for each segment.
-    DURATION_NORTH_SEC = 2
-    DURATION_SOUTH_SEC = 2
-    DURATION_EAST_SEC = 2
-    DURATION_WEST_SEC = 2
+    DURATION_NORTH_SEC = 5
+    DURATION_SOUTH_SEC = 5
+    DURATION_EAST_SEC = 5
+    DURATION_WEST_SEC = 5
 
     # Control path using velocity commands
     print("Point the vehicle to a specific direction, then moves using SET_POSITION_TARGET_LOCAL_NED and velocity parameters")
@@ -350,24 +332,21 @@ def vel_control_align_north_and_move_square():
     send_ned_velocity(NORTH, 0, 0, DURATION_NORTH_SEC)
     send_ned_velocity(0, 0, 0, 1)
 
-    print("Yaw 90 absolute (East)")
-    condition_yaw(90)
-    print("Velocity East")
-    send_ned_velocity(0, EAST, 0, DURATION_EAST_SEC)
-    send_ned_velocity(0, 0, 0, 1)
-
-    print("Yaw 180 absolute (South)")
-    condition_yaw(180)
-    print("Velocity South")
-    send_ned_velocity(SOUTH, 0, 0, DURATION_SOUTH_SEC)
-    send_ned_velocity(0, 0, 0, 1)
-
-    print("Yaw 270 absolute (West)")
-    condition_yaw(270)
-    print("Velocity West")
-    send_ned_velocity(0, WEST, 0, DURATION_WEST_SEC)
-    send_ned_velocity(0, 0, 0, 1)
-
+def do_set_servo(servo_number,pwm):
+    msg = vehicle.message_factory.command_long_encode(
+        0,0,0,
+        mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
+        servo_number,
+        pwm,
+        0,
+        0,
+        0,
+        0,
+        0
+    )
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
+    print("succeess set a servo!")
 
 #######################################
 # Main program starts here
@@ -384,9 +363,31 @@ try:
     print("Starting autonomous control...")
     while True:
         if (vehicle.mode.name == "LOITER") and (rc_channel_value > rc_control_thres):
-            pos_control_align_north_and_move_square()
+            pos_control_align_north_and_move_1m()
+            time.sleep(1)
+            print("Setting LAND mode...")
+            vehicle.mode = VehicleMode("LAND")
+            time.sleep(6)
+            vehicle.armed = True
+            time.sleep(1.5)
+            vehicle.mode = VehicleMode("AUTO")
+            do_set_servo(5,2006)
+            vehicle.mode = VehicleMode("LAND")
+            time.sleep(1)
+
         elif (vehicle.mode.name == "GUIDED") and (rc_channel_value > rc_control_thres):
-            vel_control_align_north_and_move_square()
+            vel_control_align_north_and_move_1m()
+            time.sleep(1)
+            print("Setting LAND mode...")
+            vehicle.mode = VehicleMode("LAND")
+            time.sleep(6)
+            vehicle.armed = True
+            time.sleep(1.5)
+            vehicle.mode = VehicleMode("AUTO")
+            do_set_servo(5,2006)
+            vehicle.mode = VehicleMode("LAND")
+            time.sleep(1)
+
         else:
             print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
             time.sleep(1)

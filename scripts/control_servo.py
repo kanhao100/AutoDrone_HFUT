@@ -32,7 +32,7 @@ def listener(self, name, message):
     global rangefinder_dis_land
     rangefinder_dis_land = message.distance - 0.12
     #rangefinder_dis_land = round(message.distance,3) - 0.12
-    #print ('distance: %s' % message.distance)
+    print ('distance: %s' % message.distance)
 
 '''
 #明天需要修�?
@@ -95,19 +95,23 @@ def do_set_servo(servo_number,pwm):
     )
     vehicle.send_mavlink(msg)
     vehicle.flush()
-    print("succeess")
+    print("succeess set servo")
 
 #vehicle.mode = VehicleMode ("MANUAL")
-time.sleep(10)
+time.sleep(5)
 print (" Ch8: %s" % vehicle.channels['8'])
 vehicle.channels.overrides['8'] = 1130
 time.sleep(2)
 print (" Ch8: %s" % vehicle.channels['8'])
 
+vehicle.mode = VehicleMode("GUIDED")
 vehicle.armed = True
-time.sleep(1.5)
+time.sleep(3)
+vehicle.simple_takeoff(0.5)
 vehicle.mode = VehicleMode("AUTO")
-do_set_servo(5,2006)
+# vehicle.mode = VehicleMode("GUIDED")
+time.sleep(2)
+do_set_servo(5,1030)
 vehicle.mode = VehicleMode("LAND")
 
 print("success!")

@@ -90,7 +90,7 @@ def listener(self, name, message):
         got_landing_massage = True
         print("got a land message")
 
-
+   
 '''
 @vehicle.on_message('*')
 def listener(self, name, message):
@@ -122,7 +122,6 @@ def send_land_message(x, y):
     vehicle.send_mavlink(msg)
     vehicle.flush()
 
-
 while(True):
     starttime = time.time()
     ret, frame = capture.read()
@@ -146,10 +145,10 @@ while(True):
             circle1 = cv2.HoughCircles(
                 gray, cv2.HOUGH_GRADIENT, 1, 400, param1=100, param2=75, minRadius=60, maxRadius=320)
         '''
-        if (rangefinder_dis_land + 0.12) > 1.6 or (rangefinder_dis_land + 0.12) == 1.6:
+        if (rangefinder_dis_land + 0.12) >= 1.6 or (rangefinder_dis_land + 0.12) == 1.6:
             circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 400, param1=50, param2=75, minRadius=20, maxRadius=100)
         if (rangefinder_dis_land + 0.12) < 1.6:
-            circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 400, param1=100, param2=75, minRadius=60, maxRadius=320)
+            circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 400, param1=100, param2=75, minRadius=60, maxRadius=400)
         #if (rangefinder_dis_land + 0.12) < 0.15 or (rangefinder_dis_land + 0.12) == 0.15:
             #circle1 = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 400, param1=1000, param2=500, minRadius=99, maxRadius=100)
             #pass
@@ -195,6 +194,15 @@ while(True):
                     (2*(rangefinder_dis_land+0.12)*horizontal_fov)
                 r_y = (d_true*vertical_resolution) / \
                     (2*(rangefinder_dis_land+0.12)*vertical_fov)
+                x_change = horizontal_resolution/2 - x
+                y_change = vertical_resolution/2 - y
+                x_true_x = x_change*(rangefinder_dis_land+0.12)*horizontal_fov/horizontal_resolution
+                x_true_y = x_change*(rangefinder_dis_land+0.12)*vertical_fov/vertical_resolution
+                x_true = (x_true_x + x_true_y)/2
+                y_true_x = y_change*(rangefinder_dis_land+0.12)*horizontal_fov/horizontal_resolution
+                y_true_y = y_change*(rangefinder_dis_land+0.12)*vertical_fov/vertical_resolution
+                y_true = (y_true_x + y_true_y)/2
+                print("x_true:{},y_true:{}".format(x_true,y_true))
             if x is not None:
                 if y is not None:
                     try:

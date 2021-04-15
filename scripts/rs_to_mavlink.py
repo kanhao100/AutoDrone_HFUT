@@ -4,11 +4,13 @@ import threading
 
 enable_control = False #危险操作,无开发人员在场请勿修改
 
-enable_servo = True #可能存在危险,拆桨测试
+enable_servo = False #可能存在危险,拆桨测试
 
 enable_land = False
 
 enable_t265_low_rate = False
+
+auto_arm = True
 
 connection_in_port = "/dev/ttyACM0"
 connection_in_baud = "921600"
@@ -38,6 +40,9 @@ def run_control():
 
 def run_control_servo():
     os.system("python3 control_servo.py --connect=" + connection_out_p03)
+
+def auto_arm():
+    os.system("python3 auto_arm.py --connect=" + connection_out_p03)
 
 thread1 = threading.Thread(target=mavproxy_create_connection)
 thread1.start()
