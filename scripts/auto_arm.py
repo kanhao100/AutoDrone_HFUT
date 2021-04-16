@@ -24,7 +24,7 @@ import sys
 # Parameters
 #######################################
 
-rc_control_channel = 6     # Channel to check value, start at 0 == chan1_raw
+rc_control_channel = 5     # Channel to check value, start at 0 == chan1_raw
 rc_control_thres = 2000    # Values to check
 
 #######################################
@@ -376,32 +376,105 @@ def vel_control_align_north_and_move_square():
     send_ned_velocity(0, WEST, 0, DURATION_WEST_SEC)
     send_ned_velocity(0, 0, 0, 1)
 
+def jump_waypoint(WP,repeat):
+    msg = vehicle.message_factory.mav_cmd_do_jump_encode(
+        WP,
+        repeat,
+        0,
+        0,
+        0,
+        0,
+        0,
+    )
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
+
+def jump_waypoint2(WP,repeat):
+    msg = vehicle.message_factory.command_long_encode(
+        0,0,0,
+        mavutil.mavlink.MAV_CMD_DO_JUMP,
+        WP,
+        repeat,
+        0,
+        0,
+        0,
+        0,
+        0
+    )
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
+
+def do_set_servo(servo_number,pwm):
+    msg = vehicle.message_factory.command_long_encode(
+        0,0,0,
+        mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
+        servo_number,
+        pwm,
+        0,
+        0,
+        0,
+        0,
+        0
+    )
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
+    print("succeess set servo")
+
+def mission_start(mission_start , mission_end):
+    msg = vehicle.message_factory.command_long_encode(
+        0,0,0,
+        mavutil.mavlink.MAV_CMD_MISSION_START,
+        mission_start,
+        mission_end,
+        0,
+        0,
+        0,
+        0,
+        0
+    )
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
 
 #######################################
 # Main program starts here
 #######################################
+print("SUCCEE into auto_arm")
+while True:
+    print("cmd:")
+    # print(vehicle.commands.next())
+    print(vehicle.commands.next)
+    print("arm_satus:")
+    print(vehicle.armed)
+    if (vehicle.commands.next == 3) and (rc_channel_value > rc_control_thres) and (vehicle.armed == False):
+        print("vehicle_JUPM")
+        time.sleep(8)
+        vehicle.mode = VehicleMode("GUIDED")
+        time.sleep(2)
+        # vehicle.armed = True
+        vehicle.mode = VehicleMode("AUTO")
+        time.sleep(2)
+        do_set_servo(5,1030)
+        do_set_servo(7,983)
+        time.sleep(1)
+        vehicle.mode = VehicleMode("GUIDED")
+        time.sleep(0.5)
+        vehicle.armed = True
+        vehicle.mode = VehicleMode("AUTO")
+        time.sleep(1)
+        # jump_waypoint(4, 1)
+        # jump_waypoint2(4, 1)
+        mission_start(4,7)
+        time.sleep(3)
+    else:
+        print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
+        time.sleep(1)
 
-try:
-    while True:
-        if (vehicle.mode.name == "LAND") and (rc_channel_value > rc_control_thres):
-            time.sleep(8)
-            vehicle.mode.name == "GUIDED"
-            vehicle.armed = True
-            vehicle.mode.name == "AUTO" 
-            time.sleep(3)
+# Close vehicle object before exiting script
+print("Close vehicle object")
+vehicle.close()
 
+# Shut down simulator if it was started.
+if sitl is not None:
+    sitl.stop()
 
-    # Close vehicle object before exiting script
-    print("Close vehicle object")
-    vehicle.close()
-
-    # Shut down simulator if it was started.
-    if sitl is not None:
-        sitl.stop()
-
-    print("Completed")
-
-except KeyboardInterrupt:
-    vehicle.close()
-    print("Vehicle object closed.")
-    sys.exit()
+print("Completed")

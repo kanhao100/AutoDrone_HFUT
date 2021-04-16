@@ -105,13 +105,14 @@ time.sleep(2)
 print (" Ch8: %s" % vehicle.channels['8'])
 
 vehicle.mode = VehicleMode("GUIDED")
-vehicle.armed = True
+#vehicle.armed = True
 time.sleep(3)
 vehicle.simple_takeoff(0.5)
+# while 
 vehicle.mode = VehicleMode("AUTO")
 # vehicle.mode = VehicleMode("GUIDED")
 time.sleep(2)
-do_set_servo(5,1030)
+do_set_servo(7,983)
 vehicle.mode = VehicleMode("LAND")
 
 print("success!")

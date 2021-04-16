@@ -10,7 +10,7 @@ enable_land = False
 
 enable_t265_low_rate = False
 
-auto_arm = True
+enable_auto_arm = True
 
 connection_in_port = "/dev/ttyACM0"
 connection_in_baud = "921600"
@@ -64,4 +64,8 @@ if enable_control:
 
 if enable_servo:
     thread4 = threading.Thread(target=run_control_servo)
+    thread4.start()
+
+if enable_auto_arm:
+    thread4 = threading.Thread(target=auto_arm)
     thread4.start()
