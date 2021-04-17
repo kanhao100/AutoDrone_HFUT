@@ -310,7 +310,7 @@ def vel_control_align_north_and_move_1m():
     # vy < 0 => fly West
     EAST = 0.2
     WEST = -0.2
-
+    
     # Note for vz: 
     # vz < 0 => ascend
     # vz > 0 => descend

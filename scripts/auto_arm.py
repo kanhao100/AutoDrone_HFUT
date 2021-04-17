@@ -158,8 +158,6 @@ def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
         velocity_x, velocity_y, velocity_z, # x, y, z velocity in m/s
         0, 0, 0, # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
         0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
-
-
     # send command to vehicle on 1 Hz cycle
     for x in range(0,duration):
         vehicle.send_mavlink(msg)
@@ -435,6 +433,23 @@ def mission_start(mission_start , mission_end):
     vehicle.send_mavlink(msg)
     vehicle.flush()
 
+def goto_position_target_local_ned(north, east, down):
+    """
+    Send SET_POSITION_TARGET_LOCAL_NED command to request the vehicle fly to a specified
+    location in the North, East, Down frame.
+    """
+    msg = vehicle.message_factory.set_position_target_local_ned_encode(
+        0,       # time_boot_ms (not used)
+        0, 0,    # target system, target component
+        mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
+        0b0000111111111000, # type_mask (only positions enabled)
+        north, east, down,
+        0, 0, 0, # x, y, z velocity in m/s  (not used)
+        0, 0, 0, # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
+        0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
+    # send command to vehicle
+    vehicle.send_mavlink(msg)
+
 #######################################
 # Main program starts here
 #######################################
@@ -445,9 +460,10 @@ while True:
     print(vehicle.commands.next)
     print("arm_satus:")
     print(vehicle.armed)
-    if (vehicle.commands.next == 3) and (rc_channel_value > rc_control_thres) and (vehicle.armed == False):
+    '''
+    if (vehicle.commands.next == 3) and (rc_channel_value > rc_control_thres):
         print("vehicle_JUPM")
-        time.sleep(8)
+        time.sleep(10)
         vehicle.mode = VehicleMode("GUIDED")
         time.sleep(2)
         # vehicle.armed = True
@@ -468,8 +484,19 @@ while True:
     else:
         print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
         time.sleep(1)
+    '''
+    if (vehicle.commands.next == 3) and (rc_channel_value > rc_control_thres):
+        print("vehicle_alt_to_0.5")
+        goto_position_target_local_ned(0,0,-0.45)
+        time.sleep(3)
+        vehicle.mode = VehicleMode("AUTO")
+    if (vehicle.commands.next == 5) and (rc_channel_value > rc_control_thres):
+        pass
+    else:
+        print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
+        time.sleep(1)
 
-# Close vehicle object before exiting script
+    
 print("Close vehicle object")
 vehicle.close()
 

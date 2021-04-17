@@ -20,6 +20,9 @@ enable_capture_save = True
 # 可以单独开启
 enable_capture_simple = True
 
+#极度危险的开关
+enable_control_v_pre = False
+
 # 输入检测的圆的实际直径,单位m
 d_true = 0.5
 
@@ -97,6 +100,23 @@ def listener(self, name, message):
     print ('message: {}'.format(message))
 '''
 
+def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
+    """
+    Move vehicle in direction based on specified velocity vectors.
+    """
+    msg = vehicle.message_factory.set_position_target_local_ned_encode(
+        0,       # time_boot_ms (not used)
+        0, 0,    # target system, target component
+        mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
+        0b0000111111000111, # type_mask (only speeds enabled)
+        0, 0, 0, # x, y, z positions (not used)
+        velocity_x, velocity_y, velocity_z, # x, y, z velocity in m/s
+        0, 0, 0, # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
+        0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
+    # send command to vehicle on 1 Hz cycle
+    for x in range(0,duration):
+        vehicle.send_mavlink(msg)
+        time.sleep(1)
 
 def send_land_message(x, y):
     global current_time_us
@@ -122,6 +142,10 @@ def send_land_message(x, y):
     vehicle.send_mavlink(msg)
     vehicle.flush()
 
+def control_precision():
+    control_v_duration = 20
+    send_ned_velocity(x_true/control_v_duration,y_true/control_v_duration,0,control_v_duration)
+    
 while(True):
     starttime = time.time()
     ret, frame = capture.read()
@@ -194,6 +218,7 @@ while(True):
                     (2*(rangefinder_dis_land+0.12)*horizontal_fov)
                 r_y = (d_true*vertical_resolution) / \
                     (2*(rangefinder_dis_land+0.12)*vertical_fov)
+
                 x_change = horizontal_resolution/2 - x
                 y_change = vertical_resolution/2 - y
                 x_true_x = x_change*(rangefinder_dis_land+0.12)*horizontal_fov/horizontal_resolution
@@ -203,10 +228,15 @@ while(True):
                 y_true_y = y_change*(rangefinder_dis_land+0.12)*vertical_fov/vertical_resolution
                 y_true = (y_true_x + y_true_y)/2
                 print("x_true:{},y_true:{}".format(x_true,y_true))
+
+
             if x is not None:
                 if y is not None:
                     try:
-                        send_land_message(x, y)
+                        if enable_control_v_pre:
+                            control_precision()
+                        else:
+                            send_land_message(x, y)
                     except:
                         print("error to send a land message")
                         pass
