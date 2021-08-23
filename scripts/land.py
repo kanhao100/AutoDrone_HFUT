@@ -204,9 +204,9 @@ while(True):
             for i in circles[:]:
                 if enable_capture_save:
                     cv2.circle(frame_circles,
-                               (i[0], i[1]), i[2], (255, 0, 0), 2)  # 画圆
+                                (i[0], i[1]), i[2], (255, 0, 0), 2)  # 画圆
                     cv2.circle(frame_circles,
-                               (i[0], i[1]), 2, (255, 0, 0), 2)  # 画圆心
+                                (i[0], i[1]), 2, (255, 0, 0), 2)  # 画圆心
                 x = i[0]
                 y = i[1]
                 r = i[2]

@@ -1,7 +1,9 @@
+
 #####################################################
 ##          librealsense T265 to MAVLink           ##
 #####################################################
 # This script assumes pyrealsense2.[].so file is found under the same directory as this script
+# This script assume more_t265_devices.py
 # Install required packages: 
 #   pip3 install pyrealsense2
 #   pip3 install transformations
@@ -9,24 +11,28 @@
 #   pip3 install apscheduler
 #   pip3 install pyserial
 # Set the path for IDLE
+import argparse
+import math as m
+import os
+import signal
 import sys
+import threading
+import time
+from time import sleep
+
+import numpy as np
+import pyrealsense2 as rs
+import transformations as tf
+from apscheduler.schedulers.background import BackgroundScheduler
+from dronekit import VehicleMode, connect
+from pymavlink import mavutil
+
+import more_t265_devices as mtd
+
 sys.path.append("/usr/local/lib/")
 # Set MAVLink protocol to 2.
-import os
 os.environ["MAVLINK20"] = "1"
 # Import the libraries
-import pyrealsense2 as rs
-import numpy as np
-import transformations as tf
-import math as m
-import time
-import argparse
-import threading
-import signal
-from time import sleep
-from apscheduler.schedulers.background import BackgroundScheduler
-from dronekit import connect, VehicleMode
-from pymavlink import mavutil
 
 # Replacement of the standard print() function to flush the output
 def progress(string):
@@ -526,7 +532,11 @@ mavlink_thread.start()
 signal.setitimer(signal.ITIMER_REAL, 5)  # seconds...
 
 send_msg_to_gcs('Connecting to camera...')
-realsense_connect()
+try:
+    t265_1 = mtd.T265CameraSource('2322110082')
+    t265_2 = mtd.T265CameraSource('2322110308')
+except:
+    realsense_connect()
 send_msg_to_gcs('Camera connected.')
 
 signal.setitimer(signal.ITIMER_REAL, 0)  # cancel alarm
@@ -584,11 +594,13 @@ send_msg_to_gcs('Sending vision messages to FCU')
 
 try:
     while not main_loop_should_quit:
-        # Wait for the next set of frames from the camera
-        frames = pipe.wait_for_frames()
-
-        # Fetch pose frame
-        pose = frames.get_pose_frame()
+        try:
+            pose = t265_1.get()
+        except:
+            # Wait for the next set of frames from the camera
+            frames = pipe.wait_for_frames()
+            # Fetch pose frame
+            pose = frames.get_pose_frame()
 
         # Process data
         if pose:
