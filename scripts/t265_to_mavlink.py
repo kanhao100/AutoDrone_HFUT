@@ -117,6 +117,7 @@ V_aeroRef_aeroBody = None
 heading_north_yaw = None
 current_confidence_level = None
 current_time_us = 0
+all_tracker_confidnece = None
 
 # Increment everytime pose_jumping or relocalization happens
 # See here: https://github.com/IntelRealSense/librealsense/blob/master/doc/t265.md#are-there-any-t265-specific-options
@@ -471,6 +472,12 @@ def realsense_connect():
     pipe_2.start(cfg_2)
     send_msg_to_gcs('Camera_2 connected.')
 
+def fusion(sensor_1, sensor_2):
+    if all_tracker_confidnece is not 0 or None:
+        return (data.tracker_confidence * sensor_1 + data_2.tracker_confidence * sensor_2) / all_tracker_confidnece
+    else:
+        progress("ERROR:Fusion error OR loss all T265 track ")
+
 #######################################
 # Functions - Miscellaneous
 #######################################
@@ -611,28 +618,36 @@ try:
                 data_2 = pose_2.get_pose_data()
 
                 # Confidence level value from T265: 0-3, remapped to 0 - 100: 0% - Failed / 33.3% - Low / 66.6% - Medium / 100% - High  
-                current_confidence_level = float((data.tracker_confidence + data_2.tracker_confidence) * 200 / 3)  
+                all_tracker_confidnece = data.tracker_confidence + data_2.tracker_confidence
+                current_confidence_level = float(all_tracker_confidnece / 2 * 100 / 3)  
 
                 # In transformations, Quaternions w+ix+jy+kz are represented as [w, x, y, z]!
-                H_T265Ref_T265body = tf.quaternion_matrix([data.rotation.w, data.rotation.x, data.rotation.y, data.rotation.z]) 
-                H_T265Ref_T265body[0][3] = data.translation.x * scale_factor
-                H_T265Ref_T265body[1][3] = data.translation.y * scale_factor
-                H_T265Ref_T265body[2][3] = data.translation.z * scale_factor
+                H_T265Ref_T265body = tf.quaternion_matrix([ fusion(data.rotation.w, data_2.rotation.w), 
+                                                            fusion(data.rotation.x, data_2.rotation.x),
+                                                            fusion(data.rotation.y, data_2.rotation.y), 
+                                                            fusion(data.rotation.z, data_2.rotation.z)]) 
+                H_T265Ref_T265body[0][3] = fusion(data.translation.x, data_2.translation.x) * scale_factor
+                H_T265Ref_T265body[1][3] = fusion(data.translation.y, data_2.translation.y) * scale_factor
+                H_T265Ref_T265body[2][3] = fusion(data.translation.z, data_2.translation.z) * scale_factor
 
                 # Transform to aeronautic coordinates (body AND reference frame!)
                 H_aeroRef_aeroBody = H_aeroRef_T265Ref.dot( H_T265Ref_T265body.dot( H_T265body_aeroBody))
 
                 # Calculate GLOBAL XYZ speed (speed from T265 is already GLOBAL)
                 V_aeroRef_aeroBody = tf.quaternion_matrix([1,0,0,0])
-                V_aeroRef_aeroBody[0][3] = data.velocity.x
-                V_aeroRef_aeroBody[1][3] = data.velocity.y
-                V_aeroRef_aeroBody[2][3] = data.velocity.z
+                V_aeroRef_aeroBody[0][3] = fusion(data.velocity.x, data_2.velocity.x)
+                V_aeroRef_aeroBody[1][3] = fusion(data.velocity.y, data_2.velocity.y)
+                V_aeroRef_aeroBody[2][3] = fusion(data.velocity.z, data_2.velocity.z)
                 V_aeroRef_aeroBody = H_aeroRef_T265Ref.dot(V_aeroRef_aeroBody)
 
                 # Check for pose jump and increment reset_counter
                 if prev_data != None:
-                    delta_translation = [data.translation.x - prev_data.translation.x, data.translation.y - prev_data.translation.y, data.translation.z - prev_data.translation.z]
-                    delta_velocity = [data.velocity.x - prev_data.velocity.x, data.velocity.y - prev_data.velocity.y, data.velocity.z - prev_data.velocity.z]
+                    delta_translation = [fusion(data.translation.x, data_2.translation.x) - fusion(prev_data.translation.x, prev_data_2.translation.x), 
+                    fusion(data.translation.y, data_2.translation.y) - fusion(prev_data.translation.y, prev_data_2.translation.y), 
+                    fusion(data.translation.z, data_2.translation.z) - fusion(prev_data.translation.z, prev_data_2.translation.z)]
+                    delta_velocity = [fusion(data.velocity.x, data_2.velocity.x) - fusion(prev_data.velocity.x, prev_data_2.velocity.x), 
+                    fusion(data.velocity.y, data_2.velocity.y) - fusion(prev_data.velocity.y, prev_data_2.velocity.y), 
+                    fusion(data.velocity.z, data_2.velocity.z) - fusion(prev_data.velocity.z, prev_data_2.velocity.z)]
                     position_displacement = np.linalg.norm(delta_translation)
                     speed_delta = np.linalg.norm(delta_velocity)
 
@@ -648,6 +663,7 @@ try:
                         increment_reset_counter()
                     
                 prev_data = data
+                prev_data_2 = data_2
 
                 # Take offsets from body's center of gravity (or IMU) to camera's origin into account
                 if body_offset_enabled == 1:
