@@ -2,7 +2,6 @@
 ##          librealsense T265 to MAVLink           ##
 #####################################################
 # This script assumes pyrealsense2.[].so file is found under the same directory as this script
-# This script assume more_t265_devices.py
 # Install required packages: 
 #   pip3 install pyrealsense2
 #   pip3 install transformations
@@ -104,8 +103,6 @@ exit_code = 1
 # Camera-related variables
 pipe = None
 pose_sensor = None
-pipe_2 = None
-pose_sensor_2 = None
 linear_accel_cov = 0.01
 angular_vel_cov  = 0.01
 
@@ -442,34 +439,27 @@ def realsense_notification_callback(notif):
         send_msg_to_gcs('Relocalization detected')
 
 def realsense_connect():
-    global pipe, pose_sensor, pipe_2, pose_sensor_2
-
-    send_msg_to_gcs('Connecting to camera_1...')
+    global pipe, pose_sensor
+    
     # Declare RealSense pipeline, encapsulating the actual device and sensors
     pipe = rs.pipeline()
+
     # Build config object before requesting data
     cfg = rs.config()
     cfg.enable_device('2322110082')
+    # cfg.enable_device('002322110308')
     # Enable the stream we are interested in
     cfg.enable_stream(rs.stream.pose) # Positional data
+    # Start streaming with requested config
+
     # Configure callback for relocalization event
     device = cfg.resolve(pipe).get_device()
     pose_sensor = device.first_pose_sensor()
     pose_sensor.set_notifications_callback(realsense_notification_callback)
-    # Start streaming with requested config
-    pipe.start(cfg)
-    send_msg_to_gcs('Camera_1 connected.')
 
-    send_msg_to_gcs('Connecting to camera_2...')
-    pipe_2 = rs.pipeline()
-    cfg_2 = rs.config()
-    cfg_2.enable_device('2322110308')
-    cfg_2.enable_stream(rs.stream.pose)
-    device_2 = cfg_2.resolve(pipe_2).get_device()
-    pose_sensor_2 = device_2.first_pose_sensor()
-    pose_sensor_2.set_notifications_callback(realsense_notification_callback)
-    pipe_2.start(cfg_2)
-    send_msg_to_gcs('Camera_2 connected.')
+
+
+    pipe.start(cfg)
 
 #######################################
 # Functions - Miscellaneous
@@ -537,10 +527,11 @@ mavlink_thread.start()
 
 # send_msg_to_gcs('Setting timer...')
 signal.setitimer(signal.ITIMER_REAL, 5)  # seconds...
-try:
-    realsense_connect()
-except:
-    progress("ERROR: T265's serial_number is not setted correctly OR not plug all T265")
+
+send_msg_to_gcs('Connecting to camera...')
+realsense_connect()
+send_msg_to_gcs('Camera connected.')
+
 signal.setitimer(signal.ITIMER_REAL, 0)  # cancel alarm
 
 # Send MAVlink messages in the background at pre-determined frequencies
@@ -548,6 +539,7 @@ sched = BackgroundScheduler()
 
 if enable_msg_vision_position_estimate:
     sched.add_job(send_vision_position_estimate_message, 'interval', seconds = 1/vision_position_estimate_msg_hz, max_instances=2)
+
 
 if enable_msg_vision_position_delta:
     sched.add_job(send_vision_position_delta_message, 'interval', seconds = 1/vision_position_delta_msg_hz, max_instances=2)
@@ -595,23 +587,23 @@ send_msg_to_gcs('Sending vision messages to FCU')
 
 try:
     while not main_loop_should_quit:
+        # Wait for the next set of frames from the camera
         frames = pipe.wait_for_frames()
+
         # Fetch pose frame
         pose = frames.get_pose_frame()
 
-        frames_2 = pipe_2.wait_for_frames()
-        pose_2 = frames_2.get_pose_frame()
         # Process data
         if pose:
             with lock:
                 # Store the timestamp for MAVLink messages
                 current_time_us = int(round(time.time() * 1000000))
+
                 # Pose data consists of translation and rotation
                 data = pose.get_pose_data()
-                data_2 = pose_2.get_pose_data()
-
+                
                 # Confidence level value from T265: 0-3, remapped to 0 - 100: 0% - Failed / 33.3% - Low / 66.6% - Medium / 100% - High  
-                current_confidence_level = float((data.tracker_confidence + data_2.tracker_confidence) * 200 / 3)  
+                current_confidence_level = float(data.tracker_confidence * 100 / 3)  
 
                 # In transformations, Quaternions w+ix+jy+kz are represented as [w, x, y, z]!
                 H_T265Ref_T265body = tf.quaternion_matrix([data.rotation.w, data.rotation.x, data.rotation.y, data.rotation.z]) 
@@ -682,7 +674,6 @@ finally:
     # start a timer in case stopping everything nicely doesn't work.
     signal.setitimer(signal.ITIMER_REAL, 5)  # seconds...
     pipe.stop()
-    pipe_2.stop()
     mavlink_thread_should_exit = True
     mavlink_thread.join()
     conn.close()

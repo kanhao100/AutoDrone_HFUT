@@ -7,15 +7,15 @@ __description__ = '''
     hfut_autoUAV修改，在t265_to_mavlink.py中import
 '''
 import pyrealsense2 as rs
-import logging
 import datetime
-
+'''
+import logging
 logging.basicConfig(
     level=logging.DEBUG,
     format='[%(levelname)s] %(asctime)s.%(msecs)03d: (%(threadName)-9s) %(message)s',
     datefmt="%H:%M:%S"
 )
-
+'''
 def get_devices_serial_numbers(device_suffix:str='T265') -> [str]:
     '''
     Return list of serial numbers conected devices.
@@ -54,7 +54,7 @@ class T265CameraSource:
         self.__config.enable_device(self.__serial_number)
         self.__config.enable_stream(rs.stream.pose)
         self.__pipeline.start(self.__config)
-        logging.debug('T265 ({}) camera is ready.'.format(self.__serial_number))
+        # logging.debug('T265 ({}) camera is ready.'.format(self.__serial_number))
     
     def __restart_pipeline(self):
         self.__pipeline = rs.pipeline()
@@ -62,7 +62,7 @@ class T265CameraSource:
         self.__config.enable_device(self.__serial_number)
         self.__config.enable_stream(rs.stream.pose)
         self.__pipeline.start(self.__config)
-        logging.debug('Tracking is lossing more than 5s, T265 ({}) camera was resarted.'.format(self.__serial_number))
+        # logging.debug('Tracking is lossing more than 5s, T265 ({}) camera was resarted.'.format(self.__serial_number))
 
 
     def get(self) -> rs.pose:
