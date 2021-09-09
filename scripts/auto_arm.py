@@ -402,6 +402,54 @@ def jump_waypoint2(WP,repeat):
     vehicle.send_mavlink(msg)
     vehicle.flush()
 
+def mav_cmd_waypoint(latitude,longitude,altitude):
+    msg = vehicle.message_factory.command_long_encode(
+        0,0,0,
+        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+        0,#Delay
+        0,
+        0,
+        0,
+        latitude,
+        longitude,
+        altitude
+    )
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
+    print("succeess set mav_cmd_waypoint")
+
+def mav_cmd_nav_takeoff(altitude):
+    msg = vehicle.message_factory.command_long_encode(
+        0,0,0,
+        mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+        0,#Delay
+        0,
+        0,
+        0,
+        0,
+        0,
+        altitude
+    )
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
+    print("succeess set mav_cmd_nav_takeoff")
+
+def mav_cmd_nav_land():
+    msg = vehicle.message_factory.command_long_encode(
+        0,0,0,
+        mavutil.mavlink.MAV_CMD_NAV_LAND,
+        0,#Delay
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+    )
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
+    print("succeess set mav_cmd_nav_land")
+
 def do_set_servo(servo_number,pwm):
     msg = vehicle.message_factory.command_long_encode(
         0,0,0,
@@ -417,7 +465,6 @@ def do_set_servo(servo_number,pwm):
     vehicle.send_mavlink(msg)
     vehicle.flush()
     print("succeess set servo")
-
 def mission_start(mission_start , mission_end):
     msg = vehicle.message_factory.command_long_encode(
         0,0,0,
@@ -454,12 +501,14 @@ def goto_position_target_local_ned(north, east, down):
 # Main program starts here
 #######################################
 print("SUCCEE into auto_arm")
+
 while True:
     print("cmd:")
     # print(vehicle.commands.next())
     print(vehicle.commands.next)
     print("arm_satus:")
     print(vehicle.armed)
+
     '''
     if (vehicle.commands.next == 3) and (rc_channel_value > rc_control_thres):
         print("vehicle_JUPM")
@@ -485,17 +534,23 @@ while True:
         print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
         time.sleep(1)
     '''
-    if (vehicle.commands.next == 3) and (rc_channel_value > rc_control_thres):
-        print("vehicle_alt_to_0.5")
-        goto_position_target_local_ned(0,0,-0.45)
+    
+    if (vehicle.commands.next != 3) and (rc_channel_value > rc_control_thres):
+        # print("vehicle_alt_to_0.5")
+        # goto_position_target_local_ned(0,0,-0.45)
         time.sleep(3)
         vehicle.mode = VehicleMode("AUTO")
+        mav_cmd_nav_takeoff(0.5)
+        mav_cmd_waypoint(15.1269441,1.662431,1)
+        mav_cmd_nav_land()
+        time.sleep(150)
+        # mav_cmd_waypoint(15.1299321,1.6624298,1)
     if (vehicle.commands.next == 5) and (rc_channel_value > rc_control_thres):
         pass
     else:
         print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
         time.sleep(1)
-
+    
     
 print("Close vehicle object")
 vehicle.close()

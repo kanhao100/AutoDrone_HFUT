@@ -10,6 +10,8 @@ enable_land = False
 
 enable_t265_low_rate = False
 
+enable_t265_old = False #只使用一个双目相机
+
 enable_auto_arm = True
 
 connection_in_port = "/dev/ttyACM0"
@@ -17,6 +19,8 @@ connection_in_baud = "921600"
 connection_out_p01 = "127.0.0.1:14550"      # T265
 connection_out_p02 = "127.0.0.1:14560"      # 
 connection_out_p03 = "127.0.0.1:14570"      # Control (GUIDED)
+# connection_out_p04 = "127.0.0.1:14580" 
+# connection_out_listen = '192.168.137.1:14580'
 
 def mavproxy_create_connection():
     os.system("mavproxy.py" + \
@@ -32,11 +36,14 @@ def run_t265():
 def run_t265_low_rate():
     os.system("python3 t265_to_mavlink_lowrate.py --connect=" + connection_out_p01)
 
+def run_t265_old():
+    os.system("python3 old_t265_to_mavlink.py --connect=" + connection_out_p01)
+
 def run_landing():
     os.system("python3 land.py --connect=" + connection_out_p02)
 
 def run_control():
-    os.system("python3 mavlink_control_test1.py --connect=" + connection_out_p03)
+    os.system("python3 mavlink_control_test4.py --connect=" + connection_out_p03)
 
 def run_control_servo():
     os.system("python3 control_servo.py --connect=" + connection_out_p03)
@@ -47,11 +54,15 @@ def auto_arm():
 thread1 = threading.Thread(target=mavproxy_create_connection)
 thread1.start()
 
-if enable_t265_low_rate:
-    thread2 = threading.Thread(target=run_t265_low_rate)
-    thread2.start()
+if not enable_t265_old:
+    if enable_t265_low_rate:
+        thread2 = threading.Thread(target=run_t265_low_rate)
+        thread2.start()
+    else:
+        thread2 = threading.Thread(target=run_t265)
+        thread2.start()
 else:
-    thread2 = threading.Thread(target=run_t265)
+    thread2 = threading.Thread(target=run_t265_old)
     thread2.start()
 
 if enable_land:

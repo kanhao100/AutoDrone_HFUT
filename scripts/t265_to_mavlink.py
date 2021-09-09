@@ -616,7 +616,8 @@ try:
                 # Pose data consists of translation and rotation
                 data = pose.get_pose_data()
                 data_2 = pose_2.get_pose_data()
-
+                # need to do:
+                # 位置修正
                 # Confidence level value from T265: 0-3, remapped to 0 - 100: 0% - Failed / 33.3% - Low / 66.6% - Medium / 100% - High  
                 all_tracker_confidnece = data.tracker_confidence + data_2.tracker_confidence
                 current_confidence_level = float(all_tracker_confidnece / 2 * 100 / 3)  
@@ -626,7 +627,7 @@ try:
                                                             fusion(data.rotation.x, data_2.rotation.x),
                                                             fusion(data.rotation.y, data_2.rotation.y), 
                                                             fusion(data.rotation.z, data_2.rotation.z)]) 
-                H_T265Ref_T265body[0][3] = fusion(data.translation.x, data_2.translation.x) * scale_factor
+                H_T265Ref_T265body[0][3] = fusion(data.translation.x, -data_2.translation.x) * scale_factor
                 H_T265Ref_T265body[1][3] = fusion(data.translation.y, data_2.translation.y) * scale_factor
                 H_T265Ref_T265body[2][3] = fusion(data.translation.z, data_2.translation.z) * scale_factor
 
@@ -635,19 +636,19 @@ try:
 
                 # Calculate GLOBAL XYZ speed (speed from T265 is already GLOBAL)
                 V_aeroRef_aeroBody = tf.quaternion_matrix([1,0,0,0])
-                V_aeroRef_aeroBody[0][3] = fusion(data.velocity.x, data_2.velocity.x)
+                V_aeroRef_aeroBody[0][3] = fusion(data.velocity.x, -data_2.velocity.x)
                 V_aeroRef_aeroBody[1][3] = fusion(data.velocity.y, data_2.velocity.y)
                 V_aeroRef_aeroBody[2][3] = fusion(data.velocity.z, data_2.velocity.z)
                 V_aeroRef_aeroBody = H_aeroRef_T265Ref.dot(V_aeroRef_aeroBody)
 
                 # Check for pose jump and increment reset_counter
                 if prev_data != None:
-                    delta_translation = [fusion(data.translation.x, data_2.translation.x) - fusion(prev_data.translation.x, prev_data_2.translation.x), 
-                    fusion(data.translation.y, data_2.translation.y) - fusion(prev_data.translation.y, prev_data_2.translation.y), 
-                    fusion(data.translation.z, data_2.translation.z) - fusion(prev_data.translation.z, prev_data_2.translation.z)]
-                    delta_velocity = [fusion(data.velocity.x, data_2.velocity.x) - fusion(prev_data.velocity.x, prev_data_2.velocity.x), 
-                    fusion(data.velocity.y, data_2.velocity.y) - fusion(prev_data.velocity.y, prev_data_2.velocity.y), 
-                    fusion(data.velocity.z, data_2.velocity.z) - fusion(prev_data.velocity.z, prev_data_2.velocity.z)]
+                    delta_translation = [   fusion(data.translation.x, -data_2.translation.x) - fusion(prev_data.translation.x, -prev_data_2.translation.x), 
+                                            fusion(data.translation.y, data_2.translation.y) - fusion(prev_data.translation.y, prev_data_2.translation.y), 
+                                            fusion(data.translation.z, data_2.translation.z) - fusion(prev_data.translation.z, prev_data_2.translation.z)]
+                    delta_velocity = [  fusion(data.velocity.x, -data_2.velocity.x) - fusion(prev_data.velocity.x, -prev_data_2.velocity.x), 
+                                        fusion(data.velocity.y, data_2.velocity.y) - fusion(prev_data.velocity.y, prev_data_2.velocity.y), 
+                                        fusion(data.velocity.z, data_2.velocity.z) - fusion(prev_data.velocity.z, prev_data_2.velocity.z)]
                     position_displacement = np.linalg.norm(delta_translation)
                     speed_delta = np.linalg.norm(delta_velocity)
 
