@@ -653,7 +653,7 @@ try:
                 if prev_data != None:
                     delta_translation = [   fusion(data.translation.x, -data_2.translation.x) - fusion(prev_data.translation.x, -prev_data_2.translation.x), 
                                             fusion(data.translation.y, data_2.translation.y) - fusion(prev_data.translation.y, prev_data_2.translation.y), 
-                                            fusion(data.translation.z, data_2.translation.z) - fusion(prev_data.translation.z, prev_data_2.translation.z)]
+                                            fusion(data.translation.z, -data_2.translation.z) - fusion(prev_data.translation.z, -prev_data_2.translation.z)]
                     delta_velocity = [  fusion(data.velocity.x, -data_2.velocity.x) - fusion(prev_data.velocity.x, -prev_data_2.velocity.x), 
                                         fusion(data.velocity.y, data_2.velocity.y) - fusion(prev_data.velocity.y, prev_data_2.velocity.y), 
                                         fusion(data.velocity.z, -data_2.velocity.z) - fusion(prev_data.velocity.z, -prev_data_2.velocity.z)]
