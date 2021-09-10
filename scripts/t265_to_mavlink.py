@@ -474,7 +474,8 @@ def realsense_connect():
 
 def fusion(sensor_1, sensor_2):
     if all_tracker_confidnece is not 0 or None:
-        return (data.tracker_confidence * sensor_1 + data_2.tracker_confidence * sensor_2) / all_tracker_confidnece
+        fusion_result = (data.tracker_confidence * sensor_1 + data_2.tracker_confidence * sensor_2) / all_tracker_confidnece
+        return fusion_result
     else:
         progress("ERROR:Fusion error OR loss all T265 track ")
 
@@ -623,13 +624,20 @@ try:
                 current_confidence_level = float(all_tracker_confidnece / 2 * 100 / 3)  
 
                 # In transformations, Quaternions w+ix+jy+kz are represented as [w, x, y, z]!
-                H_T265Ref_T265body = tf.quaternion_matrix([ fusion(data.rotation.w, data_2.rotation.w), 
+                if data.tracker_confidence is not 0:
+                    H_T265Ref_T265body = tf.quaternion_matrix([data.rotation.w, data.rotation.x, data.rotation.y, data.rotation.z]) 
+                else:
+                    print("[严重问题]前置双目摄像头失效，旋转数据失效")
+                    '''
+                    H_T265Ref_T265body = tf.quaternion_matrix([ fusion(data.rotation.w, data_2.rotation.w), 
                                                             fusion(data.rotation.x, data_2.rotation.x),
                                                             fusion(data.rotation.y, data_2.rotation.y), 
                                                             fusion(data.rotation.z, data_2.rotation.z)]) 
+                    '''
+
                 H_T265Ref_T265body[0][3] = fusion(data.translation.x, -data_2.translation.x) * scale_factor
                 H_T265Ref_T265body[1][3] = fusion(data.translation.y, data_2.translation.y) * scale_factor
-                H_T265Ref_T265body[2][3] = fusion(data.translation.z, data_2.translation.z) * scale_factor
+                H_T265Ref_T265body[2][3] = fusion(data.translation.z, -data_2.translation.z) * scale_factor
 
                 # Transform to aeronautic coordinates (body AND reference frame!)
                 H_aeroRef_aeroBody = H_aeroRef_T265Ref.dot( H_T265Ref_T265body.dot( H_T265body_aeroBody))
@@ -638,7 +646,7 @@ try:
                 V_aeroRef_aeroBody = tf.quaternion_matrix([1,0,0,0])
                 V_aeroRef_aeroBody[0][3] = fusion(data.velocity.x, -data_2.velocity.x)
                 V_aeroRef_aeroBody[1][3] = fusion(data.velocity.y, data_2.velocity.y)
-                V_aeroRef_aeroBody[2][3] = fusion(data.velocity.z, data_2.velocity.z)
+                V_aeroRef_aeroBody[2][3] = fusion(data.velocity.z, -data_2.velocity.z)
                 V_aeroRef_aeroBody = H_aeroRef_T265Ref.dot(V_aeroRef_aeroBody)
 
                 # Check for pose jump and increment reset_counter
@@ -648,7 +656,7 @@ try:
                                             fusion(data.translation.z, data_2.translation.z) - fusion(prev_data.translation.z, prev_data_2.translation.z)]
                     delta_velocity = [  fusion(data.velocity.x, -data_2.velocity.x) - fusion(prev_data.velocity.x, -prev_data_2.velocity.x), 
                                         fusion(data.velocity.y, data_2.velocity.y) - fusion(prev_data.velocity.y, prev_data_2.velocity.y), 
-                                        fusion(data.velocity.z, data_2.velocity.z) - fusion(prev_data.velocity.z, prev_data_2.velocity.z)]
+                                        fusion(data.velocity.z, -data_2.velocity.z) - fusion(prev_data.velocity.z, -prev_data_2.velocity.z)]
                     position_displacement = np.linalg.norm(delta_translation)
                     speed_delta = np.linalg.norm(delta_velocity)
 
@@ -685,8 +693,10 @@ try:
                     progress("DEBUG: Raw RPY[deg]: {}".format( np.array( tf.euler_from_matrix( H_T265Ref_T265body, 'sxyz')) * 180 / m.pi))
                     progress("DEBUG: NED RPY[deg]: {}".format( np.array( tf.euler_from_matrix( H_aeroRef_aeroBody, 'sxyz')) * 180 / m.pi))
                     progress("DEBUG: Raw pos xyz : {}".format( np.array( [data.translation.x, data.translation.y, data.translation.z])))
-                    progress("DEBUG: NED pos xyz : {}".format( np.array( tf.translation_from_matrix( H_aeroRef_aeroBody))))
-
+                    progress("DEBUG: Raw pos xyz : {}".format( np.array( [data_2.translation.x, data_2.translation.y, data_2.translation.z])))
+                    progress("DEBUG: two device tracker:{}".format(np.array([data.tracker_confidence, data_2.tracker_confidence])))
+                    progress("DEBUG: NED pos xyz : {}".format( np.array( tf.translation_from_matrix(H_aeroRef_aeroBody))))
+                    
 except Exception as e:
     progress(e)
 
