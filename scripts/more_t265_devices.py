@@ -8,14 +8,14 @@ __description__ = '''
 '''
 import pyrealsense2 as rs
 import datetime
-'''
+import time
 import logging
 logging.basicConfig(
     level=logging.DEBUG,
     format='[%(levelname)s] %(asctime)s.%(msecs)03d: (%(threadName)-9s) %(message)s',
     datefmt="%H:%M:%S"
 )
-'''
+
 def get_devices_serial_numbers(device_suffix:str='T265') -> [str]:
     '''
     Return list of serial numbers conected devices.
@@ -68,32 +68,38 @@ class T265CameraSource:
     def get(self) -> rs.pose:
         try:
             frames = self.__pipeline.wait_for_frames()
-            return frames.get_pose_frame()
-            # data = frames.get_pose_frame()
-            # return data.get_pose_data()
+            #return frames.get_pose_frame()
+            data = frames.get_pose_frame()
+            return data.get_pose_data()
         except:
             self.__restart_pipeline()
             return 'restared'
 
     def get_xyz(self) -> (float, float, float):
         data = self.get()
-        return data.translation.x, data.translation.y, data.translation.z,
-
+        return round(data.translation.x,3), round(data.translation.y,3), round(data.translation.z,3           ),
+    def get_rotation(self) -> (float, float, float):
+        data = self.get()
+        return data.rotation.w, data.rotation.x, data.rotation.y, data.rotation.z
 
 if __name__ == "__main__":
-    number_of_experiments = 2
+    number_of_experiments = 99999
     serial_numbers =  get_devices_serial_numbers()
     sources = [T265CameraSource(serial_number) for serial_number in serial_numbers]
 
     print('Serial experiment', '-' * 50)
     print('serial_numbers', serial_numbers)
+    '''
     for camera_index, source in enumerate(sources):
         for experiment_index in range(number_of_experiments):
             print(experiment_index, camera_index,  source.get_serial_number(), source.get_xyz(), datetime.datetime.now())
+    '''
     print('Parallel experiment', '-' * 50)
     for experiment_index in range(number_of_experiments):
+        time.sleep(1)
+        print()
         for camera_index, source in enumerate(sources):
-            print(experiment_index, camera_index, source.get_serial_number(), source.get_xyz(), datetime.datetime.now())
+            print(experiment_index, camera_index, source.get_serial_number(), source.get_rotation(), datetime.datetime.now())
 
 
 
