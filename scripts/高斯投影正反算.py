@@ -88,11 +88,11 @@ def targetXY2LB(X, Y):
     return XY2LatLon(targetXY[0], targetXY[1], HomeXY[2])
 
 def relativeLatLon2XY(L1, B1, L2, B2):
-    return(math.sqrt((LatLon2XY(L1,B1)[0]-LatLon2XY(L2,B2)[0])**2+(LatLon2XY(L1,B1)[1]-LatLon2XY(L2,B2)[1])**2))
+    return(math.sqrt((LatLon2XY(L1,B1)[0]-LatLon2XY(L2,B2)[0])**2 + (LatLon2XY(L1,B1)[1]-LatLon2XY(L2,B2)[1])**2))
 
 # print (LatLon2XY(31.6122917,118.4459928)[0])
 # print (LatLon2XY(31.6113473,118.4460336))
-print(math.sqrt((LatLon2XY(15.1268671,1.6625165)[0]-LatLon2XY(15.1282039,1.6805220)[0])**2+(LatLon2XY(15.1268671,1.6625165)[1]-LatLon2XY(15.1282039,1.6805220)[1])**2))
+print (math.sqrt((LatLon2XY(15.1268671,1.6625165)[0]-LatLon2XY(15.1282039,1.6805220)[0])**2+(LatLon2XY(15.1268671,1.6625165)[1]-LatLon2XY(15.1282039,1.6805220)[1])**2))
 print (LatLon2XY(31.6113473,118.4460336))
 print (XY2LatLon(637220.0986797615,3499665.031476644,LatLon2XY(31.6113473,118.4460336)[2]))
 print (targetXY2LB(1,0))

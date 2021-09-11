@@ -127,7 +127,6 @@ reset_counter = 1
 #######################################
 # Parsing user' inputs
 #######################################
-
 parser = argparse.ArgumentParser(description='Reboots vehicle')
 parser.add_argument('--connect',
                     help="Vehicle connection target string. If not specified, a default string will be used.")
@@ -145,7 +144,6 @@ parser.add_argument('--camera_orientation', type=int,
                     help="Configuration for camera orientation. Currently supported: forward, usb port to the right - 0; downward, usb port to the right - 1, 2: forward tilted down 45deg")
 parser.add_argument('--debug_enable',type=int,
                     help="Enable debug messages on terminal")
-
 args = parser.parse_args()
 
 connection_string = args.connect
@@ -232,11 +230,9 @@ else:
     np.set_printoptions(precision=4, suppress=True) # Format output on terminal 
     progress("INFO: Debug messages enabled.")
 
-
 #######################################
 # Functions - MAVLink
 #######################################
-
 def mavlink_loop(conn, callbacks):
     '''a main routine for a thread; reads data from a mavlink connection,
     calling callbacks based on message type received.
@@ -370,7 +366,6 @@ def send_msg_to_gcs(text_to_be_sent):
     conn.mav.statustext_send(mavutil.mavlink.MAV_SEVERITY_INFO, text_msg.encode())
     progress("INFO: %s" % text_to_be_sent)
 
-
 # Send a mavlink SET_GPS_GLOBAL_ORIGIN message (http://mavlink.org/messages/common#SET_GPS_GLOBAL_ORIGIN), which allows us to use local position information without a GPS.
 def set_default_global_origin():
     conn.mav.set_gps_global_origin_send(
@@ -427,7 +422,6 @@ def att_msg_callback(value):
 #######################################
 # Functions - T265
 #######################################
-
 def increment_reset_counter():
     global reset_counter
     if reset_counter >= 255:
@@ -473,12 +467,16 @@ def realsense_connect():
     send_msg_to_gcs('Camera_2 connected.')
 
 def fusion(sensor_1, sensor_2):
+
     if all_tracker_confidnece is not 0 or None:
         fusion_result = (data.tracker_confidence * sensor_1 + data_2.tracker_confidence * sensor_2) / all_tracker_confidnece
         return fusion_result
     else:
         progress("ERROR:Fusion error OR loss all T265 track ")
 
+#######################################
+# Functions - WCS84 TO XY axis (used in waypoint)
+#######################################
 def LatLon2XY(latitude, longitude):
     a = 6378137.0
     # b = 6356752.3142
@@ -561,7 +559,7 @@ def targetXY2LB(X, Y):
 
 def relativeLatLon2XY(L1, B1, L2, B2):
     return(math.sqrt((LatLon2XY(L1,B1)[0]-LatLon2XY(L2,B2)[0])**2+(LatLon2XY(L1,B1)[1]-LatLon2XY(L2,B2)[1])**2))
-    
+
 #######################################
 # Functions - Miscellaneous
 #######################################
@@ -597,7 +595,6 @@ def user_input_monitor():
 #######################################
 # Main code starts here
 #######################################
-
 try:
     progress("INFO: pyrealsense2 version: %s" % str(rs.__version__))
 except Exception:
@@ -625,7 +622,6 @@ mavlink_thread.start()
 # Start a timer and rely on a restart of the script to get it working.
 # Configuring the camera appears to block all threads, so we can't do
 # this internally.
-
 # send_msg_to_gcs('Setting timer...')
 signal.setitimer(signal.ITIMER_REAL, 5)  # seconds...
 try:

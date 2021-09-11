@@ -2,24 +2,27 @@
 import os
 import threading
 
-enable_control = False #危险操作,无开发人员在场请勿修改
-
-enable_servo = False #可能存在危险,拆桨测试
-
-enable_land = False
-
+### thread2 ###
+enable_t265_old = False #只使用一个双目相机
 enable_t265_low_rate = False
 
-enable_t265_old = False #只使用一个双目相机
+### thread3 ###
+enable_land = False
 
-enable_auto_arm = True
+### thread4 ###
+enable_control = False #危险操作,无开发人员在场请勿修改
+enable_servo = False #可能存在危险,拆桨测试
+enable_auto_arm = False
+
+### thread5 ###
+enable_get_tarjectory = True
 
 connection_in_port = "/dev/ttyACM0"
 connection_in_baud = "921600"
 connection_out_p01 = "127.0.0.1:14550"      # T265
 connection_out_p02 = "127.0.0.1:14560"      # 
 connection_out_p03 = "127.0.0.1:14570"      # Control (GUIDED)
-# connection_out_p04 = "127.0.0.1:14580" 
+connection_out_p04 = "127.0.0.1:14580" 
 # connection_out_listen = '192.168.137.1:14580'
 
 def mavproxy_create_connection():
@@ -28,7 +31,8 @@ def mavproxy_create_connection():
             " --baudrate=" + connection_in_baud + \
             " --out udp:"  + connection_out_p01 + \
             " --out udp:"  + connection_out_p02 + \
-            " --out udp:"  + connection_out_p03)
+            " --out udp:"  + connection_out_p03 + \
+            " --out udp:"  + connection_out_p04)
 
 def run_t265():
     os.system("python3 t265_to_mavlink.py --connect=" + connection_out_p01)
@@ -50,6 +54,9 @@ def run_control_servo():
 
 def auto_arm():
     os.system("python3 auto_arm.py --connect=" + connection_out_p03)
+
+def get_trajectory(): 
+    os.system("python3 get_trajectory.py --connect=" + connection_out_p04)
 
 thread1 = threading.Thread(target=mavproxy_create_connection)
 thread1.start()
@@ -80,3 +87,7 @@ if enable_servo:
 if enable_auto_arm:
     thread4 = threading.Thread(target=auto_arm)
     thread4.start()
+
+if enable_get_tarjectory: 
+    thread5 = threading.Thread(target=get_trajectory)
+    thread5.start()
