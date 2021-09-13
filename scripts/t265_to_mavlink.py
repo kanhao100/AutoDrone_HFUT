@@ -24,11 +24,12 @@ import time
 import argparse
 import threading
 import signal
-from time import sleep
+import time
 from apscheduler.schedulers.background import BackgroundScheduler
 from dronekit import connect, VehicleMode
 from pymavlink import mavutil
 
+start_time = time.time()
 # Replacement of the standard print() function to flush the output
 def progress(string):
     print(string, file=sys.stdout)
@@ -473,6 +474,7 @@ def fusion(sensor_1, sensor_2):
         return fusion_result
     else:
         progress("ERROR:Fusion error OR loss all T265 track ")
+        progress("running time:{}".format(time.time() - start_time))
 
 #######################################
 # Functions - WCS84 TO XY axis (used in waypoint)
@@ -703,16 +705,17 @@ try:
                 current_confidence_level = float(all_tracker_confidnece / 2 * 100 / 3)  
 
                 # In transformations, Quaternions w+ix+jy+kz are represented as [w, x, y, z]!
-                if data.tracker_confidence is not 0:
-                    H_T265Ref_T265body = tf.quaternion_matrix([data.rotation.w, data.rotation.x, data.rotation.y, data.rotation.z]) 
+                if data.tracker_confidence <= 0 and time.time() - start_time >= 1.5:
+                    print("[严重问题]前置双目摄像头失效,旋转数据失效")
+                    print("两个相机的置信度依次为：{}，{}".format(data.tracker_confidence,data_2.tracker_confidence))            
                 else:
-                    print("[严重问题]前置双目摄像头失效，旋转数据失效")
-                    '''
-                    H_T265Ref_T265body = tf.quaternion_matrix([ fusion(data.rotation.w, data_2.rotation.w), 
-                                                            fusion(data.rotation.x, data_2.rotation.x),
-                                                            fusion(data.rotation.y, data_2.rotation.y), 
-                                                            fusion(data.rotation.z, data_2.rotation.z)]) 
-                    '''
+                    H_T265Ref_T265body = tf.quaternion_matrix([data.rotation.w, data.rotation.x, data.rotation.y, data.rotation.z])
+                '''
+                H_T265Ref_T265body = tf.quaternion_matrix([ fusion(data.rotation.w, data_2.rotation.w), 
+                                                        fusion(data.rotation.x, data_2.rotation.x),
+                                                        fusion(data.rotation.y, data_2.rotation.y), 
+                                                        fusion(data.rotation.z, data_2.rotation.z)]) 
+                '''
 
                 H_T265Ref_T265body[0][3] = fusion(data.translation.x, -data_2.translation.x) * scale_factor
                 H_T265Ref_T265body[1][3] = fusion(data.translation.y, data_2.translation.y) * scale_factor
