@@ -8,8 +8,14 @@ import math as m
 import time
 import argparse
 
-connection_string = 'COM22'
-connection_baudrate = 921600
+enable_test_in_windows = False
+
+
+if enable_test_in_windows: 
+    connection_string = 'COM22' #填写COM口，使用设备管理器查看即可
+else: 
+    connection_string = '/dev/ttyACM0'
+connection_baudrate = 115200
 connection_timeout_sec = 5
 heading_north_yaw = None
 
@@ -18,8 +24,8 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--connect',
                     help="vehicle connection target string. If not specified, SITL automatically started and used.")
 args = parser.parse_args()
-
-connection_string = args.connect
+if args.connect is not None:
+    connection_string = args.connect
 
 def progress(string):
     print(string, file=sys.stdout)
@@ -70,7 +76,7 @@ mavlink_thread = threading.Thread(target=mavlink_loop, args=(conn, mavlink_callb
 mavlink_thread.start()
 
 while True: 
-    mavtlog = conn.recv_match(type=['ALTITUDE'])
+    mavtlog = conn.recv_match(type=['ATTITUDE'])
     print (mavtlog.get_type())
     print (mavtlog.get_type())
     time.sleep(1)
