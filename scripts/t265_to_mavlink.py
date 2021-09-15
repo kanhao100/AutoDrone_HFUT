@@ -445,7 +445,7 @@ def realsense_connect():
     pipe = rs.pipeline()
     # Build config object before requesting data
     cfg = rs.config()
-    cfg.enable_device('2322110082')
+    cfg.enable_device('2322110308')
     # Enable the stream we are interested in
     cfg.enable_stream(rs.stream.pose) # Positional data
     # Configure callback for relocalization event
@@ -459,7 +459,7 @@ def realsense_connect():
     send_msg_to_gcs('Connecting to camera_2...')
     pipe_2 = rs.pipeline()
     cfg_2 = rs.config()
-    cfg_2.enable_device('2322110308')
+    cfg_2.enable_device('2322110082')
     cfg_2.enable_stream(rs.stream.pose)
     device_2 = cfg_2.resolve(pipe_2).get_device()
     pose_sensor_2 = device_2.first_pose_sensor()
@@ -778,7 +778,7 @@ try:
                     progress("DEBUG: Raw pos xyz : {}".format( np.array( [data_2.translation.x, data_2.translation.y, data_2.translation.z])))
                     progress("DEBUG: two device tracker:{}".format(np.array([data.tracker_confidence, data_2.tracker_confidence])))
                     progress("DEBUG: NED pos xyz : {}".format( np.array( tf.translation_from_matrix(H_aeroRef_aeroBody))))
-                    
+                    progress("DEBUG: velocity{}".format(np.array([V_aeroRef_aeroBody[0][3], V_aeroRef_aeroBody[1][3], V_aeroRef_aeroBody[1][3]])))
 except Exception as e:
     progress(e)
 
