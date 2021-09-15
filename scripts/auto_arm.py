@@ -535,9 +535,10 @@ while True:
         time.sleep(1)
     '''
     
-    if (vehicle.commands.next != 3) and (rc_channel_value > rc_control_thres):
+    if rc_channel_value > rc_control_thres:
         # print("vehicle_alt_to_0.5")
         # goto_position_target_local_ned(0,0,-0.45)
+        '''
         time.sleep(3)
         vehicle.mode = VehicleMode("AUTO")
         mav_cmd_nav_takeoff(0.5)
@@ -545,8 +546,8 @@ while True:
         mav_cmd_nav_land()
         time.sleep(150)
         # mav_cmd_waypoint(15.1299321,1.6624298,1)
-    if (vehicle.commands.next == 5) and (rc_channel_value > rc_control_thres):
-        pass
+        '''
+        
     else:
         print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
         time.sleep(1)
