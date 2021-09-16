@@ -12,6 +12,7 @@
 # Set the path for IDLE
 import sys
 sys.path.append("/usr/local/lib/")
+sys.path.append("/home/hfut/.local/lib/python3.6/site-packages/")
 # Set MAVLink protocol to 2.
 import os
 os.environ["MAVLINK20"] = "1"
@@ -611,6 +612,7 @@ conn = mavutil.mavlink_connection(
     source_component = 93,
     baud=connection_baudrate,
     force_connected=True,
+    retries=20,
 )
 
 mavlink_callbacks = {
@@ -626,11 +628,16 @@ mavlink_thread.start()
 # this internally.
 # send_msg_to_gcs('Setting timer...')
 signal.setitimer(signal.ITIMER_REAL, 5)  # seconds...
-try:
-    realsense_connect()
-except:
-    progress("ERROR: T265's serial_number is not setted correctly OR not plug all T265")
+realsense_connected = 0
+while realsense_connected == 0:
+    try:
+        realsense_connect()
+        realsense_connected = 1
+    except:
+        print("ERROR: T265's serial_number is not setted correctly OR not plug all T265")
+        time.sleep(1)
 signal.setitimer(signal.ITIMER_REAL, 0)  # cancel alarm
+
 
 # Send MAVlink messages in the background at pre-determined frequencies
 sched = BackgroundScheduler()
