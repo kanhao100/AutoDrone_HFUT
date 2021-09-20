@@ -24,7 +24,7 @@ import sys
 # Parameters
 #######################################
 
-rc_control_channel = 5     # Channel to check value, start at 0 == chan1_raw
+rc_control_channel = 6     # Channel to check value, start at 0 == chan1_raw
 rc_control_thres = 2000    # Values to check
 
 #######################################
@@ -501,14 +501,11 @@ def goto_position_target_local_ned(north, east, down):
 # Main program starts here
 #######################################
 print("SUCCEE into auto_arm")
-
+main_flags = [0,0,0,0,0,0,0,0]
 while True:
-    print("cmd:")
-    # print(vehicle.commands.next())
-    print(vehicle.commands.next)
-    print("arm_satus:")
-    print(vehicle.armed)
-
+    print("cmd:{}".format(vehicle.commands.next))
+    print("arm_status:{}".format(vehicle.armed))
+    time.sleep(1)
     '''
     if (vehicle.commands.next == 3) and (rc_channel_value > rc_control_thres):
         print("vehicle_JUPM")
@@ -535,22 +532,40 @@ while True:
         time.sleep(1)
     '''
     
-    if rc_channel_value > rc_control_thres:
-        # print("vehicle_alt_to_0.5")
-        # goto_position_target_local_ned(0,0,-0.45)
-        '''
-        time.sleep(3)
-        vehicle.mode = VehicleMode("AUTO")
-        mav_cmd_nav_takeoff(0.5)
-        mav_cmd_waypoint(15.1269441,1.662431,1)
-        mav_cmd_nav_land()
-        time.sleep(150)
-        # mav_cmd_waypoint(15.1299321,1.6624298,1)
-        '''
-        
-    else:
-        print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
+    if vehicle.commands.next == 3 and main_flags[0] == 0:
+        time.sleep(15)
+        vehicle.armed = True
         time.sleep(1)
+        vehicle.mode = VehicleMode("AUTO")
+        # mav_cmd_nav_takeoff(0.5)
+        main_flags[0] = 1
+        # mav_cmd_nav_takeoff(0.5)
+        # mav_cmd_waypoint(15.1269441,1.662431,1)
+        # mav_cmd_nav_land()
+        # time.sleep(150)
+        # mav_cmd_waypoint(15.1299321,1.6624298,1)
+        
+    if vehicle.commands.next == 3 and main_flags[1] == 0:
+        time.sleep(15)
+        vehicle.armed = True
+        time.sleep(1)
+        vehicle.mode = VehicleMode("AUTO")
+        # mav_cmd_nav_takeoff(0.5)
+        main_flags[1] = 1
+        pass
+
+    if vehicle._commands.next == 12 and main_flags[2] == 0: 
+        time.sleep(15)
+        vehicle.armed = True
+        time.sleep(1)
+        vehicle.mode = VehicleMode("AUTO")
+        main_flags[2] = 1
+        pass
+
+    # else:
+        # print("Checking rc channel:", rc_control_channel, ", current value:", rc_channel_value, ", threshold to start: ", rc_control_thres)
+        # time.sleep(1)
+        # print(vehicle.commands.next)
     
     
 print("Close vehicle object")
@@ -559,5 +574,3 @@ vehicle.close()
 # Shut down simulator if it was started.
 if sitl is not None:
     sitl.stop()
-
-print("Completed")

@@ -12,10 +12,10 @@ enable_land = False
 ### thread4 ###
 enable_control = False #危险操作,无开发人员在场请勿修改
 enable_servo = False #可能存在危险,拆桨测试
-enable_auto_arm = False
+enable_auto_arm = True
 
 ### thread5 ###
-enable_get_tarjectory = True
+enable_get_tarjectory = False
 
 connection_in_port = "/dev/ttyACM0"
 connection_in_baud = "921600"
@@ -35,7 +35,7 @@ def mavproxy_create_connection():
             " --out udp:"  + connection_out_p04)
 
 def run_t265():
-    os.system("python3 t265_to_mavlink.py --connect=" + connection_out_p01)
+    os.system("/usr/bin/python3 t265_to_mavlink.py --connect=" + connection_out_p01)
 
 def run_t265_low_rate():
     os.system("python3 t265_to_mavlink_lowrate.py --connect=" + connection_out_p01)
@@ -53,7 +53,7 @@ def run_control_servo():
     os.system("python3 control_servo.py --connect=" + connection_out_p03)
 
 def auto_arm():
-    os.system("python3 auto_arm.py --connect=" + connection_out_p03)
+    os.system("/usr/bin/python3 auto_arm.py --connect=" + connection_out_p03)
 
 def get_trajectory(): 
     os.system("python3 get_trajectory.py --connect=" + connection_out_p04)

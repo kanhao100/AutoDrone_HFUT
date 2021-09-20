@@ -446,7 +446,7 @@ def realsense_connect():
     pipe = rs.pipeline()
     # Build config object before requesting data
     cfg = rs.config()
-    cfg.enable_device('2322110308')
+    cfg.enable_device('2322110082')
     # Enable the stream we are interested in
     cfg.enable_stream(rs.stream.pose) # Positional data
     # Configure callback for relocalization event
@@ -460,7 +460,7 @@ def realsense_connect():
     send_msg_to_gcs('Connecting to camera_2...')
     pipe_2 = rs.pipeline()
     cfg_2 = rs.config()
-    cfg_2.enable_device('2322110082')
+    cfg_2.enable_device('2322110308')
     cfg_2.enable_stream(rs.stream.pose)
     device_2 = cfg_2.resolve(pipe_2).get_device()
     pose_sensor_2 = device_2.first_pose_sensor()
@@ -580,7 +580,7 @@ def user_input_monitor():
             send_msg_to_gcs('Set EKF home with default GPS location')
             set_default_global_origin()
             set_default_home_position()
-            time.sleep(1) # Wait a short while for FCU to start working
+            time.sleep(5) # Wait a short while for FCU to start working
 
         # Add new action here according to the key pressed.
         # Enter: Set EKF home when user press enter
@@ -592,7 +592,7 @@ def user_input_monitor():
                 set_default_home_position()
             else:
                 progress("Got keyboard input %s" % c)
-        except IOError: pass
+        except: pass
 
 
 #######################################
@@ -691,12 +691,16 @@ send_msg_to_gcs('Sending vision messages to FCU')
 
 try:
     while not main_loop_should_quit:
-        frames = pipe.wait_for_frames()
-        # Fetch pose frame
-        pose = frames.get_pose_frame()
-
-        frames_2 = pipe_2.wait_for_frames()
-        pose_2 = frames_2.get_pose_frame()
+        for i in range(30):
+            try: 
+                frames = pipe.wait_for_frames()
+                pose = frames.get_pose_frame()
+                frames_2 = pipe_2.wait_for_frames()
+                pose_2 = frames_2.get_pose_frame()
+                break
+            except: 
+                time.sleep(0.5)
+                continue
         # Process data
         if pose:
             with lock:
